@@ -35,21 +35,29 @@ Automatically configures DAW sessions based on what the user is recording, savin
 
 ### How It Works
 
-```
-User Input: "Recording acoustic guitar and vocals"
-    ↓
-AI determines requirements:
-- 2 audio tracks (guitar mic, vocal mic)
-- Input routing based on Apollo interface
-- Plugin chain suggestions
-- Monitoring setup
-- Effect sends (reverb, delay)
-    ↓
-Generate DAW script/template
-    ↓
-Apply via DAW API
-    ↓
-Session ready to record
+```mermaid
+flowchart TD
+    A["User Input:<br/>'Recording acoustic guitar and vocals'"] --> B[AI determines requirements]
+    B --> C[2 audio tracks<br/>guitar mic, vocal mic]
+    B --> D[Input routing<br/>Apollo interface]
+    B --> E[Plugin chain<br/>suggestions]
+    B --> F[Monitoring setup]
+    B --> G[Effect sends<br/>reverb, delay]
+
+    C --> H[Generate DAW<br/>script/template]
+    D --> H
+    E --> H
+    F --> H
+    G --> H
+
+    H --> I[Apply via DAW API]
+    I --> J[Session ready<br/>to record]
+
+    style A fill:#4F46E5
+    style B fill:#7C3AED
+    style H fill:#EC4899
+    style I fill:#10B981
+    style J fill:#F59E0B
 ```
 
 ### Session Configuration

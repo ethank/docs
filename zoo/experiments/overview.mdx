@@ -220,16 +220,18 @@ Each experiment is designed for an 8-week "fill or kill" validation cycle with c
 
 ### Feature Extraction Pipeline
 
-```
-Audio File
-    ↓
-FFT / Spectral Analysis
-    ↓
-Feature Vector (JSON)
-    ↓
-LLM (interprets features)
-    ↓
-Natural Language Response
+```mermaid
+flowchart TD
+    A[Audio File] --> B[FFT / Spectral Analysis]
+    B --> C[Feature Vector JSON]
+    C --> D[LLM interprets features]
+    D --> E[Natural Language Response]
+
+    style A fill:#4F46E5
+    style B fill:#7C3AED
+    style C fill:#EC4899
+    style D fill:#10B981
+    style E fill:#F59E0B
 ```
 
 ### Privacy and Legal

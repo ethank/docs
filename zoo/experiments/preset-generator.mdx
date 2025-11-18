@@ -36,16 +36,18 @@ Generates synthesizer presets from natural language descriptions, making complex
 
 ### How It Works
 
-```
-Natural Language Description
-    ↓
-LLM maps to synthesis parameters
-    ↓
-JSON parameter output
-    ↓
-Apply to synth (via SDK/API)
-    ↓
-User preview and save
+```mermaid
+flowchart TD
+    A[Natural Language<br/>Description] --> B[LLM maps to<br/>synthesis parameters]
+    B --> C[JSON parameter output]
+    C --> D[Apply to synth<br/>via SDK/API]
+    D --> E[User preview and save]
+
+    style A fill:#4F46E5
+    style B fill:#7C3AED
+    style C fill:#EC4899
+    style D fill:#10B981
+    style E fill:#F59E0B
 ```
 
 ### Parameter Mapping

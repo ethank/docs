@@ -16,33 +16,18 @@ Zoo is designed for **rapid experimentation** with production-grade infrastructu
 
 ## High-Level Architecture
 
-```
-┌─────────────┐
-│   Frontend  │  Next.js 14 + Clerk Auth
-│  (Vercel)   │
-└──────┬──────┘
-       │
-       ↓
-┌─────────────┐
-│   API Layer │  Express + TypeScript
-│  (Railway)  │  Rate limiting, auth middleware
-└──────┬──────┘
-       │
-       ├──→ ┌──────────────┐
-       │    │   Portkey    │  LLM Gateway
-       │    │ (OpenAI/     │  Fallbacks + Observability
-       │    │  Anthropic)  │
-       │    └──────────────┘
-       │
-       ├──→ ┌──────────────┐
-       │    │     Neon     │  Postgres + pgvector
-       │    │  (Database)  │  User data, presets, sessions
-       │    └──────────────┘
-       │
-       └──→ ┌──────────────┐
-            │ Observability│  Sentry + PostHog
-            │              │  Errors + Analytics
-            └──────────────┘
+```mermaid
+graph TD
+    A[Frontend<br/>Next.js 14 + Clerk<br/>Vercel] --> B[API Layer<br/>Express + TypeScript<br/>Railway]
+    B --> C[Portkey<br/>LLM Gateway<br/>OpenAI/Anthropic]
+    B --> D[Neon Database<br/>Postgres + pgvector<br/>User data, presets]
+    B --> E[Observability<br/>Sentry + PostHog<br/>Errors + Analytics]
+
+    style A fill:#4F46E5
+    style B fill:#7C3AED
+    style C fill:#EC4899
+    style D fill:#10B981
+    style E fill:#F59E0B
 ```
 
 ---
@@ -222,32 +207,34 @@ user_actions (clicks, feedback)
 
 ### Chat Message Flow
 
-```
-1. User sends message (Frontend)
-   ↓
-2. JWT validated (API Middleware)
-   ↓
-3. Rate limit check (API Middleware)
-   ↓
-4. Load session history (Neon)
-   ↓
-5. Call LLM with tools (Portkey)
-   ↓
-6. Execute tools if needed (e.g., search_presets)
-   ↓
-7. Generate vector embedding (OpenAI)
-   ↓
-8. Query pgvector for similar presets (Neon)
-   ↓
-9. Return results to LLM
-   ↓
-10. LLM generates response
-   ↓
-11. Save to session history (Neon)
-   ↓
-12. Log usage (PostHog, Sentry)
-   ↓
-13. Return to frontend
+```mermaid
+sequenceDiagram
+    participant User as Frontend
+    participant API as API Layer
+    participant Auth as Auth Middleware
+    participant DB as Neon Database
+    participant LLM as Portkey/LLM
+    participant Vector as pgvector
+    participant Analytics as PostHog/Sentry
+
+    User->>API: Send message
+    API->>Auth: Validate JWT
+    Auth->>API: Token valid
+    API->>Auth: Check rate limit
+    Auth->>API: Within limits
+    API->>DB: Load session history
+    DB->>API: Previous messages
+    API->>LLM: Call with tools & context
+    LLM->>API: Tool call: search_presets
+    API->>LLM: Generate embedding
+    LLM->>API: Vector embedding
+    API->>Vector: Query similar presets
+    Vector->>API: Matching presets
+    API->>LLM: Return tool results
+    LLM->>API: Final response
+    API->>DB: Save to session
+    API->>Analytics: Log usage
+    API->>User: Return response
 ```
 
 **Latency Budget:**

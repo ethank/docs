@@ -36,24 +36,20 @@ Helps users recreate sounds from reference tracks by explaining production techn
 
 ### Knowledge Base Approach
 
-```
-User Query: "Bass like Billie Eilish - Bad Guy"
-    ↓
-Search curated sound database
-    ↓
-Find matching entry:
-{
-  "song": "Bad Guy",
-  "artist": "Billie Eilish",
-  "element": "bass",
-  "technique": "Distorted 808 with sidechain",
-  "plugins": ["Moog Minimoog", "1176"],
-  "tutorial_url": "..."
-}
-    ↓
-LLM generates conversational explanation
-    ↓
-Return: explanation + plugin recommendations + tutorial links
+```mermaid
+flowchart TD
+    A["User Query:<br/>'Bass like Billie Eilish - Bad Guy'"] --> B[Search curated<br/>sound database]
+    B --> C[Find matching entry]
+    C --> D[Database Record:<br/>song, artist, technique,<br/>plugins, tutorial]
+    D --> E[LLM generates<br/>conversational explanation]
+    E --> F[Return:<br/>explanation + plugins + tutorial]
+
+    style A fill:#4F46E5
+    style B fill:#7C3AED
+    style C fill:#EC4899
+    style D fill:#10B981
+    style E fill:#F59E0B
+    style F fill:#06B6D4
 ```
 
 ### Database Structure
