@@ -1,0 +1,200 @@
+---
+title: "Mix Analyzer"
+description: "AI-powered mix analysis with specific feedback on frequency balance, dynamics, and suggested UAD plugins"
+icon: "sliders"
+---
+
+## Overview
+
+Analyzes mixes and provides specific, actionable feedback on improvements with UAD plugin recommendations.
+
+**User Flow:**
+- Producer uploads rough mix
+- AI analyzes: frequency balance, dynamics, stereo field, loudness
+- Returns specific feedback with plugin recommendations
+- Suggests UAD plugins and settings to fix issues
+
+---
+
+## Why This Experiment?
+
+<CardGroup cols={3}>
+  <Card title="High Demand" icon="users">
+    Everyone wants better mixes - clear market need
+  </Card>
+  <Card title="Freemium Model" icon="dollar-sign">
+    3 analyses per month free, unlimited paid subscription
+  </Card>
+  <Card title="Clear Value" icon="check">
+    Specific, actionable feedback users can implement
+  </Card>
+</CardGroup>
+
+---
+
+## Technical Approach
+
+### Architecture
+
+```
+Audio File
+    ↓
+FFT / Spectral Analysis
+    ↓
+Feature Vector (JSON)
+    ↓
+LLM (interprets features)
+    ↓
+Natural Language Response + Plugin Recommendations
+```
+
+### Key Components
+
+**Audio Analysis (Server-Side):**
+- FFT for frequency analysis
+- Loudness measurement (LUFS)
+- Stereo correlation
+- Dynamic range analysis
+- Peak detection
+
+**Comparison Engine:**
+- Compare against reference mixes in same genre
+- Genre-specific targets (EDM vs jazz vs rock)
+- Identify specific problem frequencies
+
+**LLM Translation:**
+- Convert technical metrics to musical language
+- Explain WHY something is an issue
+- Suggest specific UAD plugins and settings
+
+---
+
+## Example Output
+
+**User uploads:** Rock mix with muddy low mids
+
+**AI Analysis:**
+```
+Your mix has excessive 200-400Hz energy (muddiness).
+
+Issues found:
+- Bass and guitar competing in low-mid range
+- Lack of clarity in vocal range
+- Stereo field narrow below 500Hz
+
+Recommended fixes:
+1. Cut 3dB at 300Hz on bass using Neve 1073
+2. High-pass filter guitar at 100Hz
+3. Add stereo width to overhead drums using Ocean Way Studios
+4. Boost 3kHz on vocals for presence using API 550A
+
+Plugin recommendations:
+- Neve 1073 (bass EQ)
+- API 550A (vocal presence)
+- Ocean Way Studios (drum width)
+```
+
+---
+
+## Challenges
+
+<Warning>
+**Compute Cost:** Audio processing is expensive (around 0.10-0.50 per minute processed)
+
+**Subjectivity:** "Good" mix depends on genre and artistic intent
+
+**Reference Database:** Need library of professional mixes for comparison
+</Warning>
+
+---
+
+## Success Metrics
+
+### Week 4 (Alpha)
+
+| Metric | Target |
+|--------|--------|
+| Feedback actionable | 60%+ |
+| Users upload revised mix | 40%+ |
+| Processing time | Less than 10 seconds |
+
+### Week 8 (Fill or Kill)
+
+| Metric | Fill Threshold | Kill Below |
+|--------|---------------|------------|
+| Day 7 Retention | More than 25% | Less than 15% |
+| Free to Paid | More than 20% | Less than 10% |
+| NPS | More than 30 | Less than 0 |
+| Cost per analysis | Less than 0.50 | More than 2.00 |
+
+---
+
+## Implementation Timeline
+
+<Steps>
+  <Step title="Week 1-2: MVP">
+    - Basic frequency analysis (FFT)
+    - Loudness measurement
+    - Simple text recommendations
+    - No genre-specific analysis yet
+  </Step>
+  <Step title="Week 3-4: Alpha">
+    - Genre selection
+    - Reference mix comparison
+    - UAD plugin recommendations
+    - 10-15 internal testers
+  </Step>
+  <Step title="Week 5-6: Beta">
+    - Advanced stereo analysis
+    - Dynamic range suggestions
+    - 50-100 external users
+    - Freemium pricing
+  </Step>
+  <Step title="Week 7-8: Decision">
+    - Measure conversion rates
+    - Calculate unit economics
+    - Fill or kill decision
+  </Step>
+</Steps>
+
+---
+
+## Cost Estimates
+
+**Infrastructure:**
+- Audio processing: 0.10-0.50 per minute
+- LLM calls: 0.05-0.10 per analysis
+- Storage: Minimal (delete audio after analysis)
+
+**Expected Usage (Month 1):**
+- 200 analyses at 3 min average
+- Processing: 60-300
+- LLM: 10-20
+- **Total: 70-320 per month**
+
+---
+
+## When to Build This
+
+<Info>
+**Recommendation:** Build as **2nd or 3rd experiment** after validating Preset Detective
+
+**Reasoning:**
+- More complex audio processing
+- Higher compute costs
+- Requires reference database
+- Start simpler, add complexity once platform is proven
+</Info>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="View All Experiments" icon="flask" href="/zoo/experiments/overview">
+    Explore other music AI experiments
+  </Card>
+  <Card title="8-Week Process" icon="calendar" href="/zoo/process/eight-week-cycle">
+    Review the fill-or-kill framework
+  </Card>
+</CardGroup>

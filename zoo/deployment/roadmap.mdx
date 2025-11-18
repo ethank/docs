@@ -1,0 +1,398 @@
+---
+title: "Deployment Roadmap"
+description: "12-week production build plan - scale Zoo Platform after validating experiments"
+icon: "map"
+---
+
+## When to Use This Roadmap
+
+<Warning>
+**Don't start here!** Only scale after:
+- 2-3 experiments successfully validated (filled)
+- 100+ daily active users across experiments
+- Clear patterns emerging in infrastructure needs
+- MVP platform becoming a bottleneck
+</Warning>
+
+**Use MVP stack (Week 1-8) first, scale only when necessary.**
+
+---
+
+## Overview
+
+This roadmap takes the MVP Zoo Platform (built in Week 1) to production-grade infrastructure supporting multiple experiments at scale.
+
+**Timeline:** 12 weeks
+**Team:** 2-3 engineers
+**Cost:** Around 200K over 12 weeks, 3-15K per month ongoing
+
+---
+
+## Phase 1: Foundation (Weeks 1-4)
+
+### Goals
+- Migrate from MVP to scalable architecture
+- Add production-grade features
+- Maintain 99.9% uptime SLA
+
+### Infrastructure Upgrades
+
+<Tabs>
+  <Tab title="Week 1-2: Backend">
+**Migrate to Microservices:**
+- API Gateway (Kong or AWS API Gateway)
+- Experiment service (manages AI experiments)
+- User service (auth, profiles, subscriptions)
+- Analytics service (data pipeline)
+
+**Add:**
+- Redis for caching and rate limiting
+- RabbitMQ or AWS SQS for message queue
+- Background job processing (Bull or Temporal)
+
+**Cost:** Around 500-1K per month
+  </Tab>
+
+  <Tab title="Week 3-4: Database">
+**Upgrade Neon:**
+- Production tier with read replicas
+- Automated backups (hourly)
+- Point-in-time recovery
+
+**Add Vector Database:**
+- Migrate from pgvector to Pinecone or Qdrant
+- Better performance for 100K+ presets
+- Multi-index support for different experiments
+
+**Cost:** Around 300-800 per month
+  </Tab>
+</Tabs>
+
+### Deliverables
+
+<Check>API Gateway routing to microservices</Check>
+<Check>Redis caching (90% cache hit rate target)</Check>
+<Check>Background job queue for long-running tasks</Check>
+<Check>Database read replicas (reduce query latency 50%)</Check>
+<Check>Automated backups and recovery tested</Check>
+
+---
+
+## Phase 2: Observability (Weeks 5-6)
+
+### Goals
+- Deep visibility into system performance
+- Proactive alerting before users are affected
+- Data-driven optimization
+
+### Monitoring Stack
+
+**Add:**
+- **OpenTelemetry** - Distributed tracing
+- **Grafana** - Dashboards and visualization
+- **Prometheus** - Metrics collection
+- **PagerDuty** - Incident management
+- **DataDog** (optional) - Unified observability
+
+### Dashboards to Build
+
+<AccordionGroup>
+  <Accordion title="System Health">
+- API latency (p50, p95, p99)
+- Error rates by endpoint
+- Database query performance
+- Cache hit rates
+- Queue depth and processing time
+  </Accordion>
+
+  <Accordion title="Business Metrics">
+- Active experiments
+- Users per experiment
+- Session duration
+- Conversion rates (free to paid)
+- Revenue per experiment
+  </Accordion>
+
+  <Accordion title="Cost Tracking">
+- LLM costs by experiment
+- Infrastructure costs by service
+- Cost per session
+- Cost per user
+- Profit margins
+  </Accordion>
+
+  <Accordion title="User Experience">
+- Time to first response
+- Tool call success rate
+- User satisfaction (NPS)
+- Retention (Day 1, 7, 30)
+- Churn rate
+  </Accordion>
+</AccordionGroup>
+
+### Alerting Rules
+
+**Critical (PagerDuty):**
+- API error rate more than 1%
+- Database connection failures
+- p95 latency more than 5 seconds
+- Payment processing failures
+
+**Warning (Slack):**
+- Cost per session up 50%
+- Cache hit rate below 80%
+- Queue backlog more than 1000 jobs
+- Unusual traffic patterns
+
+**Cost:** Around 200-400 per month
+
+---
+
+## Phase 3: Scale Infrastructure (Weeks 7-9)
+
+### Goals
+- Support 10K+ concurrent users
+- Multi-region deployment
+- Auto-scaling
+
+### Kubernetes Migration
+
+**Why Kubernetes:**
+- Auto-scaling based on load
+- Zero-downtime deployments
+- Resource optimization
+- Multi-cloud flexibility
+
+**Deployment:**
+- AWS EKS or Google GKE
+- Separate clusters for prod/staging
+- Horizontal pod autoscaling
+- Load balancing
+
+**Services to Containerize:**
+- API gateway
+- Experiment runner
+- Background workers
+- Analytics pipeline
+
+### CDN and Edge
+
+**Add:**
+- **Cloudflare** or **AWS CloudFront**
+- Edge caching for static assets
+- DDoS protection
+- Geographic load balancing
+
+### Multi-Region
+
+**Regions:**
+- US East (primary)
+- US West (failover)
+- EU (GDPR compliance)
+
+**Database:**
+- Multi-region read replicas
+- Cross-region backup
+- Geo-routing
+
+**Cost:** Around 2-5K per month
+
+---
+
+## Phase 4: Advanced Features (Weeks 10-12)
+
+### Real-Time Features
+
+**Add:**
+- WebSocket support for streaming responses
+- Server-Sent Events (SSE) for progress updates
+- Real-time collaboration (multiple users, shared sessions)
+
+### Audio Processing Pipeline
+
+**For Mix Analyzer and future audio experiments:**
+- Dedicated audio processing cluster
+- GPU instances for ML models
+- Audio format conversion pipeline
+- Streaming audio analysis
+
+**Infrastructure:**
+- AWS Lambda for serverless processing
+- S3 for temporary audio storage
+- MediaConvert for transcoding
+
+### ML Model Hosting
+
+**Self-Hosted Models (optional):**
+- Deploy smaller models on own infrastructure
+- Reduce LLM costs for high-volume queries
+- Custom fine-tuned models for music domain
+
+**Options:**
+- AWS SageMaker
+- Google Vertex AI
+- Self-managed GPU clusters
+
+**When to consider:**
+- LLM costs exceed 5K per month
+- Need custom models not available via API
+- Privacy requirements for audio processing
+
+---
+
+## Production Checklist
+
+### Security
+
+<Check>SOC 2 compliance audit</Check>
+<Check>Penetration testing</Check>
+<Check>GDPR compliance (EU users)</Check>
+<Check>CCPA compliance (California users)</Check>
+<Check>Data encryption at rest and in transit</Check>
+<Check>API key rotation policy</Check>
+<Check>Security incident response plan</Check>
+
+### Performance
+
+<Check>Load testing (10K concurrent users)</Check>
+<Check>Stress testing (peak load scenarios)</Check>
+<Check>Disaster recovery drills</Check>
+<Check>Database failover testing</Check>
+<Check>Auto-scaling verification</Check>
+
+### Documentation
+
+<Check>API documentation (OpenAPI spec)</Check>
+<Check>Architecture diagrams</Check>
+<Check>Runbooks for common incidents</Check>
+<Check>Onboarding guide for new engineers</Check>
+<Check>SLA documentation</Check>
+
+---
+
+## Cost Breakdown (Production)
+
+### Infrastructure (Per Month)
+
+| Service | MVP | Production | Scale |
+|---------|-----|------------|-------|
+| Compute (Railway/K8s) | 20 | 500 | 2000 |
+| Database (Neon) | 25 | 300 | 1000 |
+| Vector DB (Pinecone) | - | 200 | 800 |
+| Cache (Redis) | - | 100 | 400 |
+| CDN (Cloudflare) | - | 50 | 200 |
+| Monitoring | 0 | 200 | 500 |
+| Message Queue | - | 50 | 200 |
+| **Total Fixed** | **45** | **1400** | **5100** |
+
+### Variable Costs (Per 1000 Sessions)
+
+| Service | MVP | Production | Scale |
+|---------|-----|------------|-------|
+| LLM (OpenAI/Anthropic) | 30 | 30 | 20 (optimized) |
+| Audio Processing | - | 50 | 50 |
+| Embeddings | 10 | 10 | 5 (cached) |
+| **Total Variable** | **40** | **90** | **75** |
+
+### Total Monthly Cost Estimates
+
+| Usage Level | Fixed | Variable | Total |
+|-------------|-------|----------|-------|
+| 10K sessions/month | 1400 | 900 | 2300 |
+| 100K sessions/month | 1400 | 9000 | 10400 |
+| 1M sessions/month | 5100 | 75000 | 80100 |
+
+---
+
+## Team Requirements
+
+### Weeks 1-4 (Foundation)
+
+- **Backend Engineer** (full-time) - Microservices migration
+- **DevOps Engineer** (full-time) - Infrastructure setup
+- **Product Manager** (part-time) - Prioritization
+
+### Weeks 5-9 (Scale)
+
+- **Backend Engineer** (full-time)
+- **DevOps Engineer** (full-time)
+- **ML Engineer** (part-time) - Audio pipeline
+- **QA Engineer** (part-time) - Load testing
+
+### Weeks 10-12 (Advanced)
+
+- **Full Stack Engineer** (full-time) - Real-time features
+- **DevOps Engineer** (part-time) - Maintenance
+- **ML Engineer** (full-time) - Model hosting
+
+**Total Cost:** Around 150-200K over 12 weeks
+
+---
+
+## Success Metrics
+
+### Week 4
+
+<Check>99.9% uptime</Check>
+<Check>p95 latency less than 1 second</Check>
+<Check>Cache hit rate more than 85%</Check>
+<Check>Zero data loss incidents</Check>
+
+### Week 9
+
+<Check>Support 10K concurrent users</Check>
+<Check>Multi-region deployment live</Check>
+<Check>Auto-scaling working</Check>
+<Check>Cost per session reduced 30%</Check>
+
+### Week 12
+
+<Check>Real-time features shipped</Check>
+<Check>Audio pipeline operational</Check>
+<Check>SOC 2 audit in progress</Check>
+<Check>Team trained on production systems</Check>
+
+---
+
+## Decision Framework
+
+### Stay on MVP if:
+- Less than 1000 daily active users
+- Less than 2 validated experiments
+- LLM costs below 1K per month
+- No performance bottlenecks
+
+### Scale to Production if:
+- More than 100 support tickets about performance
+- More than 3 validated experiments
+- Revenue more than 50K per month
+- Clear growth trajectory
+
+### Go Enterprise if:
+- More than 10K daily active users
+- More than 5 active experiments
+- Revenue more than 500K per month
+- Enterprise customer contracts
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Start with MVP" icon="bolt" href="/zoo/quick-start">
+    Build platform in 5 days first
+  </Card>
+  <Card title="Architecture Overview" icon="diagram-project" href="/zoo/architecture/overview">
+    Understand MVP architecture
+  </Card>
+  <Card title="8-Week Process" icon="calendar" href="/zoo/process/eight-week-cycle">
+    Validate experiments before scaling
+  </Card>
+  <Card title="Experiments" icon="flask" href="/zoo/experiments/overview">
+    Review experiment ideas
+  </Card>
+</CardGroup>
+
+<Warning>
+**Remember:** Premature optimization is the root of all evil. Build MVPs, validate experiments, scale only what works.
+</Warning>

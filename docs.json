@@ -24,13 +24,25 @@
             "group": "Experiments",
             "pages": [
               "zoo/experiments/overview",
-              "zoo/experiments/preset-detective"
+              "zoo/experiments/preset-detective",
+              "zoo/experiments/mix-analyzer",
+              "zoo/experiments/preset-generator",
+              "zoo/experiments/session-setup",
+              "zoo/experiments/sound-finder"
             ]
           },
           {
             "group": "Process",
             "pages": [
               "zoo/process/eight-week-cycle"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "zoo/architecture/overview",
+              "zoo/api/reference",
+              "zoo/deployment/roadmap"
             ]
           }
         ]

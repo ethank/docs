@@ -1,0 +1,250 @@
+---
+title: "Preset Generator"
+description: "Generate synth presets from natural language descriptions using AI"
+icon: "wand-magic-sparkles"
+---
+
+## Overview
+
+Generates synthesizer presets from natural language descriptions, making complex synths accessible to everyone.
+
+**User Flow:**
+- Producer: "Create me a warm analog bass, thick, slightly distorted"
+- AI generates preset parameters for their synth
+- User can tweak or regenerate
+- Saves as custom preset
+
+---
+
+## Why This Experiment?
+
+<CardGroup cols={3}>
+  <Card title="Increases Plugin Value" icon="arrow-trend-up">
+    Makes synthesizers easier to use, reducing buyer hesitation
+  </Card>
+  <Card title="Natural Interface" icon="message">
+    No knob-twiddling required - describe what you hear
+  </Card>
+  <Card title="Viral Potential" icon="share">
+    Users share generated presets, driving adoption
+  </Card>
+</CardGroup>
+
+---
+
+## Technical Approach
+
+### How It Works
+
+```
+Natural Language Description
+    ↓
+LLM maps to synthesis parameters
+    ↓
+JSON parameter output
+    ↓
+Apply to synth (via SDK/API)
+    ↓
+User preview and save
+```
+
+### Parameter Mapping
+
+**Musical Descriptors → Synth Parameters:**
+
+| Description | Synth Parameters |
+|-------------|------------------|
+| "Warm analog bass" | Filter cutoff low, oscillator waveform saw, envelope slow |
+| "Bright aggressive lead" | Filter cutoff high, resonance up, envelope fast attack |
+| "Thick pad" | Multiple oscillators, detuned, long release |
+| "Plucky synth" | Fast attack, short decay, high velocity sensitivity |
+
+### Starting Simple
+
+**MVP (Week 1-2):**
+- Start with ONE synth (Moog Minimoog)
+- Text-only generation (no audio preview in MVP)
+- JSON parameter output
+- 10-20 common sound types
+
+**Expansion (Week 4+):**
+- Multiple synths
+- Audio preview before saving
+- User refinement ("make it brighter")
+- Community preset sharing
+
+---
+
+## Example Interaction
+
+<Tabs>
+  <Tab title="User Request">
+**User:** "I need a warm analog bass for synthwave, thick and sustained"
+
+**AI thinks:**
+- "Warm" → lower filter cutoff, vintage oscillator
+- "Analog" → slight oscillator drift, saturation
+- "Thick" → multiple oscillators slightly detuned
+- "Sustained" → long envelope release
+  </Tab>
+
+  <Tab title="Generated Preset">
+```json
+{
+  "presetName": "Warm Synthwave Bass",
+  "plugin": "moog-minimoog",
+  "parameters": {
+    "oscillator1_waveform": "sawtooth",
+    "oscillator1_octave": -1,
+    "oscillator2_waveform": "sawtooth",
+    "oscillator2_octave": -1,
+    "oscillator2_detune": 5,
+    "filter_cutoff": 35,
+    "filter_resonance": 25,
+    "filter_type": "lowpass",
+    "envelope_attack": 10,
+    "envelope_decay": 30,
+    "envelope_sustain": 80,
+    "envelope_release": 400,
+    "saturation": 15
+  },
+  "description": "Warm analog bass with thick sustain, perfect for synthwave"
+}
+```
+  </Tab>
+
+  <Tab title="User Feedback">
+**User:** "Perfect! Can you make it slightly brighter?"
+
+**AI adjusts:**
+```json
+{
+  "parameters": {
+    "filter_cutoff": 45,  // increased from 35
+    "filter_resonance": 30  // increased from 25
+  }
+}
+```
+  </Tab>
+</Tabs>
+
+---
+
+## Challenges
+
+<Warning>
+**Plugin SDK Required:** May not have access to all plugin internals
+
+**Sound Verification:** Can't actually HEAR the preset without audio rendering
+
+**Synth Differences:** "Warm" means different things on different synths
+
+**User Expectations:** Generated preset might not match their mental sound
+</Warning>
+
+---
+
+## Success Metrics
+
+### Week 4 (Alpha)
+
+| Metric | Target |
+|--------|--------|
+| Like generated preset | 50%+ |
+| Save the preset | 40%+ |
+| Regenerate/refine | 30%+ |
+
+### Week 8 (Fill or Kill)
+
+| Metric | Fill Threshold | Kill Below |
+|--------|---------------|------------|
+| Day 7 Retention | More than 30% | Less than 15% |
+| Presets saved | More than 40% | Less than 20% |
+| NPS | More than 30 | Less than 0 |
+| Cost per generation | Less than 0.10 | More than 0.50 |
+
+---
+
+## Implementation Plan
+
+<Steps>
+  <Step title="Week 1-2: MVP">
+    - Single synth (Moog Minimoog)
+    - 20 common sound types
+    - JSON parameter output
+    - No audio preview (describe only)
+  </Step>
+  <Step title="Week 3-4: Alpha">
+    - Add parameter refinement
+    - Visual parameter display
+    - Save to library
+    - 10-15 internal testers
+  </Step>
+  <Step title="Week 5-6: Beta">
+    - Audio preview (render preset)
+    - Multiple synths (2-3 total)
+    - Community presets
+    - 50-100 users
+  </Step>
+  <Step title="Week 7-8: Decision">
+    - Measure save rates
+    - User satisfaction
+    - Fill or kill
+  </Step>
+</Steps>
+
+---
+
+## Plugin SDK Requirements
+
+**Need from UAD:**
+- Parameter schema for target synths (JSON)
+- Min/max values for each parameter
+- Parameter grouping (oscillator, filter, envelope)
+- Preset file format specification
+
+**Optional:**
+- Preset rendering API (generate audio preview)
+- Direct integration with LUNA/Console
+
+---
+
+## Cost Estimates
+
+**Per Generation:**
+- LLM call: Around 0.02-0.05
+- Audio preview (optional): Around 0.05-0.10
+- Storage: Minimal (JSON only)
+
+**Expected Usage (Month 1):**
+- 500 generations
+- LLM: 10-25
+- Audio preview: 25-50 (if implemented)
+- **Total: Around 35-75 per month**
+
+---
+
+## When to Build This
+
+<Info>
+**Recommendation:** Build as **3rd experiment** after Preset Detective and Mix Analyzer
+
+**Reasoning:**
+- Requires plugin SDK access (may not be available)
+- Can't validate without audio preview
+- Lower immediate ROI than discovery tools
+- Good follow-up to successful preset discovery
+</Info>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="View All Experiments" icon="flask" href="/zoo/experiments/overview">
+    Explore other music AI experiments
+  </Card>
+  <Card title="8-Week Process" icon="calendar" href="/zoo/process/eight-week-cycle">
+    Review the fill-or-kill framework
+  </Card>
+</CardGroup>
