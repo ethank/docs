@@ -345,11 +345,23 @@ npm run dev  # localhost:3001
 ### Deployment
 
 **Automatic on push to main:**
-1. GitHub push triggers Railway (backend)
-2. GitHub push triggers Vercel (frontend)
-3. Neon production branch used
-4. Sentry release tracking
-5. PostHog deployment event
+
+```mermaid
+graph LR
+    A[Git Push to main] --> B[Railway Deploy]
+    A --> C[Vercel Deploy]
+    A --> D[Neon Production]
+    B --> E[Sentry Release]
+    C --> E
+    E --> F[PostHog Event]
+
+    style A fill:#4F46E5
+    style B fill:#7C3AED
+    style C fill:#EC4899
+    style D fill:#10B981
+    style E fill:#F59E0B
+    style F fill:#06B6D4
+```
 
 ### Monitoring
 
