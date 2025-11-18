@@ -9,7 +9,7 @@ icon: "rocket"
 Zoo is Universal Audio's **AI prototyping platform** for shipping consumer-facing music applications in 1-2 weeks instead of months.
 
 <Info>
-**Goal:** 8-week "fill or kill" cycles - validate AI products fast, kill losers, scale winners.
+Goal: 8-week "fill or kill" cycles - validate AI products fast, kill losers, scale winners.
 </Info>
 
 ## Choose Your Path
@@ -18,11 +18,9 @@ Zoo is Universal Audio's **AI prototyping platform** for shipping consumer-facin
   <Card title="Build a Music AI App" icon="music" href="/zoo/experiments/overview">
     Start with Preset Detective, Mix Analyzer, or other music-focused experiments
   </Card>
-
   <Card title="Understand Architecture" icon="diagram-project" href="/zoo/architecture/overview">
     Deep dive into platform design and technical specifications
   </Card>
-
   <Card title="Evaluate the Approach" icon="chart-line" href="/zoo/process/eight-week-cycle">
     Review the 8-week fill-or-kill framework and business case
   </Card>
@@ -41,11 +39,11 @@ AI assistant that helps musicians discover UAD presets:
 
 ### Why Start Here
 
-<Check>**Clear ROI** - Plugin/preset sales (~$50K-200K/year potential)</Check>
-<Check>**Fast validation** - Text-only MVP in Week 1, add audio later</Check>
-<Check>**Uses UA moat** - UAD preset catalog + hardware ecosystem</Check>
-<Check>**Simple validation** - Recommendations helpful or not?</Check>
-<Check>**Expandable** - Start with text, add audio analysis in Week 4-6</Check>
+- **Clear ROI** - Plugin/preset sales (around $50K-200K/year potential)
+- **Fast validation** - Text-only MVP in Week 1, add audio later
+- **Uses UA moat** - UAD preset catalog + hardware ecosystem
+- **Simple validation** - Recommendations helpful or not?
+- **Expandable** - Start with text, add audio analysis in Week 4-6
 
 ### Week 1 Plan
 
@@ -53,67 +51,56 @@ AI assistant that helps musicians discover UAD presets:
   <Step title="Infrastructure Setup">
     Set up Neon, Clerk, Portkey, Sentry, PostHog (4-6 hours)
   </Step>
-
   <Step title="Build Backend API">
     Express + tools + vector search (6-8 hours)
   </Step>
-
   <Step title="Build Frontend">
     Next.js + Clerk + chat UI (6-8 hours)
   </Step>
-
-  <Step title="Deploy & Test">
+  <Step title="Deploy and Test">
     Railway + Vercel deployment (4-6 hours)
   </Step>
-
   <Step title="Launch Alpha">
     Seed presets, invite 10-15 testers (4 hours)
   </Step>
 </Steps>
 
-**Total:** ~30-40 hours engineering + $50-100/month infrastructure
+**Total:** Approximately 30-40 hours engineering + $50-100/month infrastructure
 
-**Deliverable:** Working app at https://zoo.uaudio.com with 10-15 alpha users
+**Deliverable:** Working app with 10-15 alpha users testing
 
 ---
 
 ## Technology Stack
 
-<Tabs>
-  <Tab title="Infrastructure">
-    - **Neon** - Postgres with pgvector (preset similarity search)
-    - **Railway** - Backend deployment (auto-scaling)
-    - **Vercel** - Frontend deployment
-    - **Clerk** - Authentication (social login, JWT)
-    - **Portkey** - LLM gateway (OpenAI + Anthropic fallbacks)
-  </Tab>
+### Infrastructure
+- **Neon** - Postgres with pgvector (preset similarity search)
+- **Railway** - Backend deployment (auto-scaling)
+- **Vercel** - Frontend deployment
+- **Clerk** - Authentication (social login, JWT)
+- **Portkey** - LLM gateway (OpenAI + Anthropic fallbacks)
 
-  <Tab title="Observability">
-    - **Sentry** - Error tracking
-    - **PostHog** - Product analytics
-    - **Neon Analytics** - Database insights
-  </Tab>
+### Observability
+- **Sentry** - Error tracking
+- **PostHog** - Product analytics
+- **Neon Analytics** - Database insights
 
-  <Tab title="AI/ML">
-    - **OpenAI** - GPT-4o-mini (primary), text-embedding-ada-002 (vectors)
-    - **Anthropic** - Claude 3.5 Sonnet (fallback)
-    - **pgvector** - Semantic preset search
-  </Tab>
+### AI/ML
+- **OpenAI** - GPT-4o-mini (primary), text-embedding-ada-002 (vectors)
+- **Anthropic** - Claude 3.5 Sonnet (fallback)
+- **pgvector** - Semantic preset search
 
-  <Tab title="Frontend">
-    - **Next.js 14** - App router, React Server Components
-    - **Tailwind CSS** - Styling
-    - **Clerk Components** - Auth UI
-  </Tab>
+### Frontend
+- **Next.js 14** - App router, React Server Components
+- **Tailwind CSS** - Styling
+- **Clerk Components** - Auth UI
 
-  <Tab title="Backend">
-    - **Express** - REST API
-    - **TypeScript** - Type safety
-    - **Zod** - Runtime validation
-  </Tab>
-</Tabs>
+### Backend
+- **Express** - REST API
+- **TypeScript** - Type safety
+- **Zod** - Runtime validation
 
-**Cost:** ~$90-140/month + LLM usage (~$20/500 sessions)
+**Cost:** Approximately $90-140/month + LLM usage (around $20/500 sessions)
 
 ---
 
@@ -121,30 +108,29 @@ AI assistant that helps musicians discover UAD presets:
 
 <AccordionGroup>
   <Accordion title="Week 1: MVP Build" icon="rocket">
-    - Day 1-5: Build platform + Preset Detective
-    - **Output:** Working app deployed
-  </Accordion>
+    Day 1-5: Build platform + Preset Detective
 
+    **Output:** Working app deployed
+  </Accordion>
   <Accordion title="Week 2-3: Internal Alpha" icon="users">
-    - 10-15 UA producers test
-    - **Goal:** 60%+ use it 3+ times, 70%+ find helpful
-  </Accordion>
+    10-15 UA producers test
 
+    **Goal:** 60%+ use it 3+ times, 70%+ find helpful
+  </Accordion>
   <Accordion title="Week 4-5: External Beta" icon="user-group">
-    - 50-100 musicians invited
-    - Add: Audio upload, preset comparison
-    - **Goal:** 40%+ activation, 25%+ Day 7 retention
-  </Accordion>
+    50-100 musicians invited. Add audio upload and preset comparison.
 
-  <Accordion title="Week 6-7: Measure & Iterate" icon="chart-line">
-    - Track metrics, fix issues
-    - Expand preset catalog to 100+
-    - **Goal:** Understand usage patterns, optimize
+    **Goal:** 40%+ activation, 25%+ Day 7 retention
   </Accordion>
+  <Accordion title="Week 6-7: Measure and Iterate" icon="chart-line">
+    Track metrics, fix issues, expand preset catalog to 100+
 
+    **Goal:** Understand usage patterns, optimize
+  </Accordion>
   <Accordion title="Week 8: Fill or Kill Decision" icon="check-double">
-    - **Fill if:** >25% retention, NPS >30, team excited, cost <$0.50/session
-    - **Kill if:** Below thresholds, users don't return, "cool but wouldn't pay"
+    **Fill if:** More than 25% retention, NPS more than 30, team excited, cost less than $0.50/session
+
+    **Kill if:** Below thresholds, users don't return, "cool but wouldn't pay"
 
     **If FILL:** Move to production, allocate 0.25 FTE, build 90-day roadmap
 
@@ -160,23 +146,23 @@ AI assistant that helps musicians discover UAD presets:
 
 | Metric | Target |
 |--------|--------|
-| Time to deploy | < 5 days |
-| Infrastructure cost | < $100/month |
-| Engineering time | < 40 hours |
+| Time to deploy | Less than 5 days |
+| Infrastructure cost | Less than $100/month |
+| Engineering time | Less than 40 hours |
 | Alpha testers invited | 10-15 |
 
 ### Week 8 (Fill or Kill)
 
 | Metric | Fill Threshold | Kill Below |
 |--------|---------------|------------|
-| Day 7 Retention | > 25% | < 15% |
-| NPS | > 30 | < 0 |
-| Activation | > 40% | < 20% |
-| Helpfulness | > 65% | < 40% |
-| Cost/Session | < $0.50 | > $2.00 |
+| Day 7 Retention | More than 25% | Less than 15% |
+| NPS | More than 30 | Less than 0 |
+| Activation | More than 40% | Less than 20% |
+| Helpfulness | More than 65% | Less than 40% |
+| Cost per Session | Less than $0.50 | More than $2.00 |
 
 <Warning>
-**Decision:** Must hit ALL fill thresholds to continue. Even one miss = kill.
+**Decision:** Must hit ALL fill thresholds to continue. Even one miss equals kill.
 </Warning>
 
 ---
@@ -187,22 +173,19 @@ AI assistant that helps musicians discover UAD presets:
   <Card title="Mix Analyzer" icon="sliders" href="/zoo/experiments/mix-analyzer">
     "Why does my mix sound muddy?" - Analyzes frequency balance, dynamics, stereo
   </Card>
-
   <Card title="Preset Generator" icon="wand-magic-sparkles" href="/zoo/experiments/preset-generator">
-    "Create me a warm analog bass" - Natural language → synthesizer parameters
+    "Create me a warm analog bass" - Natural language to synthesizer parameters
   </Card>
-
   <Card title="Smart Session Setup" icon="layer-group" href="/zoo/experiments/session-setup">
-    "I'm recording guitar and vocals" - Auto-configures DAW routing, plugins
+    "I'm recording guitar and vocals" - Auto-configures DAW routing and plugins
   </Card>
-
   <Card title="Sound Finder" icon="magnifying-glass" href="/zoo/experiments/sound-finder">
-    "Bass like Billie Eilish's 'Bad Guy'" - Explains production technique
+    "Bass like Billie Eilish's Bad Guy" - Explains production technique
   </Card>
 </CardGroup>
 
 <Tip>
-**Pick one.** Run it through the 8-week process. Kill or fill. Repeat.
+Pick one experiment. Run it through the 8-week process. Kill or fill. Repeat.
 </Tip>
 
 ---
@@ -216,18 +199,18 @@ AI assistant that helps musicians discover UAD presets:
 | **Difference** | 6 months faster | $425K-925K saved | Fail fast | 3x learning |
 
 <Note>
-**Portfolio approach:** Run 10 experiments/year, expect 3-4 to fill, archive 6-7. Ship winners to production.
+**Portfolio approach:** Run 10 experiments per year, expect 3-4 to fill, archive 6-7. Ship winners to production.
 </Note>
 
 ---
 
-## When to Scale (Move to Full Platform)
+## When to Scale
 
 **Only after:**
-- ✅ 2-3 experiments validated (filled)
-- ✅ 100+ daily active users across experiments
-- ✅ Clear patterns emerging (shared infrastructure needs)
-- ✅ Team can't iterate fast enough with current setup
+- 2-3 experiments validated (filled)
+- 100+ daily active users across experiments
+- Clear patterns emerging (shared infrastructure needs)
+- Team can't iterate fast enough with current setup
 
 **Then add:**
 - Temporal (complex workflow orchestration)
@@ -247,11 +230,9 @@ See [Deployment Roadmap](/zoo/deployment/roadmap) for 12-week production build p
   <Card title="Build Preset Detective" icon="play" href="/zoo/experiments/preset-detective">
     Follow the complete Day 1-5 implementation guide
   </Card>
-
   <Card title="Explore Other Experiments" icon="flask" href="/zoo/experiments/overview">
     Review all 5 music AI experiments
   </Card>
-
   <Card title="Quick Start Guide" icon="bolt" href="/zoo/quick-start">
     Production setup with Clerk, Railway, and pgvector
   </Card>
@@ -263,27 +244,22 @@ See [Deployment Roadmap](/zoo/deployment/roadmap) for 12-week production build p
 
 <AccordionGroup>
   <Accordion title="Do we need the full platform before first experiment?">
-    **No!** Week 1 MVP is enough. Add production features (Temporal, etc.) only when needed.
+    No! Week 1 MVP is enough. Add production features (Temporal, etc.) only when needed.
   </Accordion>
-
   <Accordion title="What if our first experiment fails?">
-    **Perfect!** You learned in 8 weeks for $25K instead of 6 months for $500K. Pick next experiment.
+    Perfect! You learned in 8 weeks for $25K instead of 6 months for $500K. Pick next experiment.
   </Accordion>
-
   <Accordion title="How many experiments can we run simultaneously?">
-    Start with **1**. Max **3** with a dedicated team. More = context switching = slower.
+    Start with 1. Max 3 with a dedicated team. More equals context switching equals slower progress.
   </Accordion>
-
   <Accordion title="Can we extend past 8 weeks if we're close?">
-    **No.** 8 weeks is plenty. If you can't prove value in 8 weeks, you won't in 12. Kill and move on.
+    No. 8 weeks is plenty. If you can't prove value in 8 weeks, you won't in 12. Kill and move on.
   </Accordion>
-
-  <Accordion title="What about audio processing / ML models?">
-    Start with text/features only (Week 1). Add audio processing Week 4-6 if validated. **No premature optimization.**
+  <Accordion title="What about audio processing and ML models?">
+    Start with text and features only (Week 1). Add audio processing Week 4-6 if validated. No premature optimization.
   </Accordion>
-
   <Accordion title="Which experiment should we start with?">
-    **Preset Detective.** Clear ROI, fastest validation, uses UA moat, text-only MVP.
+    Preset Detective. Clear ROI, fastest validation, uses UA moat, text-only MVP.
   </Accordion>
 </AccordionGroup>
 
