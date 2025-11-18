@@ -1,15 +1,40 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Universal Audio Zoo Platform",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#FF5A00",
+    "light": "#FF8040",
+    "dark": "#CC4800"
   },
   "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
+      {
+        "tab": "Zoo Platform",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "zoo/index",
+              "zoo/quick-start"
+            ]
+          },
+          {
+            "group": "Experiments",
+            "pages": [
+              "zoo/experiments/overview",
+              "zoo/experiments/preset-detective"
+            ]
+          },
+          {
+            "group": "Process",
+            "pages": [
+              "zoo/process/eight-week-cycle"
+            ]
+          }
+        ]
+      },
       {
         "tab": "Guides",
         "groups": [
@@ -71,14 +96,14 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Universal Audio",
+          "href": "https://www.uaudio.com",
+          "icon": "house"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "GitHub",
+          "href": "https://github.com/universalaudio",
+          "icon": "github"
         }
       ]
     }
@@ -91,13 +116,13 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "https://help.uaudio.com"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "UA Website",
+      "href": "https://www.uaudio.com"
     }
   },
   "contextual": {
@@ -114,9 +139,10 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/uaudio",
+      "github": "https://github.com/universalaudio",
+      "linkedin": "https://linkedin.com/company/universal-audio",
+      "youtube": "https://youtube.com/universalaudio"
     }
   }
 }

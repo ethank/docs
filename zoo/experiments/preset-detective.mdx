@@ -1,0 +1,941 @@
+---
+title: "Preset Detective - Implementation Guide"
+description: "Complete 5-day implementation plan for building an AI-powered preset discovery tool"
+icon: "magnifying-glass"
+---
+
+## Mission
+
+Build a production-grade music AI app in 1 week that helps musicians identify and discover presets. Launch to internal alpha Week 2, beta by Week 4, fill-or-kill decision by Week 8.
+
+**Target:** "I want a warm analog bass" → AI recommends specific UAD presets with reasoning
+
+---
+
+## Why Start Here?
+
+<CardGroup cols={3}>
+  <Card title="Clear ROI" icon="dollar-sign">
+    Plugin and preset sales (around 50K-200K per year potential)
+  </Card>
+  <Card title="Fast Validation" icon="bolt">
+    Text-only MVP in Week 1, add audio analysis in Weeks 4-6
+  </Card>
+  <Card title="Simple Metrics" icon="chart-simple">
+    Recommendations helpful or not - easy to measure
+  </Card>
+</CardGroup>
+
+---
+
+## Tech Stack
+
+### Infrastructure
+- **Neon** - Postgres with pgvector (preset embeddings)
+- **Railway** - API + workers deployment
+- **Clerk** - Authentication (social login, user management)
+- **Portkey** - LLM gateway (OpenAI + Anthropic fallbacks)
+- **Sentry** - Error tracking
+- **PostHog** - Product analytics
+- **Vercel** - Frontend (Next.js)
+
+### AI/ML
+- **Primary**: GPT-4o-mini (fast, cheap for conversations)
+- **Fallback**: Claude 3.5 Sonnet (better reasoning if needed)
+- **Future**: GPT-4o for audio analysis (when we add uploads)
+
+**Cost:** Around 50-100 per month infrastructure + usage-based LLM costs
+
+---
+
+## Week 1: Production MVP
+
+Build this properly from day 1 - no shortcuts that need refactoring later.
+
+<Steps>
+  <Step title="Day 1: Infrastructure & Data">
+    Provision services, create database schema, seed initial data (4-6 hours)
+  </Step>
+  <Step title="Day 2: Backend API">
+    Express server, Portkey integration, tool handlers (6-8 hours)
+  </Step>
+  <Step title="Day 3: Frontend">
+    Next.js with Clerk, chat interface, preset cards (6-8 hours)
+  </Step>
+  <Step title="Day 4: Integration">
+    Generate embeddings, deploy to Railway and Vercel, test end-to-end (4-6 hours)
+  </Step>
+  <Step title="Day 5: Alpha Launch">
+    Seed more presets, create admin dashboard, invite testers (4 hours)
+  </Step>
+</Steps>
+
+---
+
+## Day 1: Infrastructure & Data Foundation
+
+### 1.1 Provision Services
+
+<AccordionGroup>
+  <Accordion title="Neon Database">
+    Create project at [neon.tech](https://neon.tech)
+    - Create project "zoo-preset-detective"
+    - Enable `pgvector` extension
+    - Copy connection string
+    - Set up staging + production branches
+  </Accordion>
+
+  <Accordion title="Clerk Authentication">
+    Create application at [clerk.com](https://clerk.com)
+    - Create application "Zoo Platform"
+    - Enable: Email, Google, GitHub login
+    - JWT template: include user_id, email, metadata
+    - Copy publishable key + secret key
+  </Accordion>
+
+  <Accordion title="Portkey LLM Gateway">
+    Create workspace at [portkey.ai](https://portkey.ai)
+    - Create account, get API key
+    - Add providers: OpenAI, Anthropic
+    - Set up fallback: OpenAI → Anthropic
+    - Copy API key + config ID
+  </Accordion>
+
+  <Accordion title="Observability Tools">
+    **Sentry**: Create Node.js project at [sentry.io](https://sentry.io)
+
+    **PostHog**: Create project at [posthog.com](https://posthog.com)
+
+    **Railway**: Create project at [railway.app](https://railway.app)
+  </Accordion>
+</AccordionGroup>
+
+### 1.2 Environment Variables
+
+Create `.env` file:
+
+```bash
+# Database
+DATABASE_URL=postgresql://...
+
+# Clerk
+CLERK_PUBLISHABLE_KEY=pk_...
+CLERK_SECRET_KEY=sk_...
+CLERK_WEBHOOK_SECRET=whsec_...
+
+# Portkey
+PORTKEY_API_KEY=...
+PORTKEY_CONFIG_ID=...
+
+# Direct LLM (for embeddings)
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Observability
+SENTRY_DSN=https://...
+POSTHOG_API_KEY=phc_...
+POSTHOG_HOST=https://app.posthog.com
+
+# App
+NODE_ENV=development
+PORT=3000
+FRONTEND_URL=http://localhost:3001
+```
+
+### 1.3 Database Schema
+
+<Tabs>
+  <Tab title="Users & Plugins">
+```sql
+-- Enable extensions
+CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+-- Users (synced from Clerk)
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT UNIQUE NOT NULL,
+  email TEXT NOT NULL,
+  full_name TEXT,
+  avatar_url TEXT,
+  tier TEXT DEFAULT 'free',
+  owned_plugins TEXT[] DEFAULT '{}',
+  preferences JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_users_clerk ON users(clerk_user_id);
+CREATE INDEX idx_users_email ON users(email);
+
+-- Plugins catalog
+CREATE TABLE plugins (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  manufacturer TEXT,
+  category TEXT,
+  description TEXT,
+  price_usd DECIMAL(10,2),
+  purchase_url TEXT,
+  image_url TEXT,
+  is_uad BOOLEAN DEFAULT false,
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_plugins_category ON plugins(category);
+CREATE INDEX idx_plugins_manufacturer ON plugins(manufacturer);
+```
+  </Tab>
+
+  <Tab title="Presets">
+```sql
+-- Presets (the core data)
+CREATE TABLE presets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  plugin_id TEXT REFERENCES plugins(id),
+  preset_name TEXT NOT NULL,
+  description TEXT,
+
+  tags TEXT[] DEFAULT '{}',
+  characteristics JSONB DEFAULT '{}',
+  embedding vector(1536),
+
+  audio_features JSONB,
+  preset_file_url TEXT,
+
+  created_by UUID REFERENCES users(id),
+  is_official BOOLEAN DEFAULT false,
+  popularity_score INT DEFAULT 0,
+
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_presets_plugin ON presets(plugin_id);
+CREATE INDEX idx_presets_tags ON presets USING GIN(tags);
+CREATE INDEX idx_presets_characteristics ON presets USING GIN(characteristics);
+CREATE INDEX idx_presets_embedding ON presets
+  USING ivfflat(embedding vector_cosine_ops) WITH (lists = 100);
+
+CREATE INDEX idx_presets_search ON presets
+  USING GIN(to_tsvector('english', preset_name || ' ' || COALESCE(description, '')));
+```
+  </Tab>
+
+  <Tab title="Sessions">
+```sql
+-- Experiments
+CREATE TABLE experiments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT,
+  system_prompt TEXT NOT NULL,
+  model TEXT DEFAULT 'gpt-4o-mini',
+  temperature FLOAT DEFAULT 0.7,
+  max_tokens INT DEFAULT 2000,
+  tools JSONB DEFAULT '[]',
+  enabled BOOLEAN DEFAULT true,
+  config JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- AI Sessions
+CREATE TABLE sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  experiment_id UUID REFERENCES experiments(id),
+  messages JSONB DEFAULT '[]',
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_sessions_user ON sessions(user_id);
+CREATE INDEX idx_sessions_experiment ON sessions(experiment_id);
+CREATE INDEX idx_sessions_created ON sessions(created_at DESC);
+```
+  </Tab>
+
+  <Tab title="Analytics">
+```sql
+-- LLM calls tracking
+CREATE TABLE llm_calls (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id UUID REFERENCES sessions(id),
+  model TEXT NOT NULL,
+  provider TEXT,
+  messages JSONB,
+  tools JSONB,
+  response_content TEXT,
+  tool_calls JSONB,
+  prompt_tokens INT,
+  completion_tokens INT,
+  total_tokens INT,
+  cost_usd DECIMAL(10,6),
+  latency_ms INT,
+  status TEXT,
+  error_message TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_llm_calls_session ON llm_calls(session_id);
+CREATE INDEX idx_llm_calls_created ON llm_calls(created_at DESC);
+
+-- User actions
+CREATE TABLE user_actions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  session_id UUID REFERENCES sessions(id),
+  action_type TEXT NOT NULL,
+  target_type TEXT,
+  target_id TEXT,
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_user_actions_user ON user_actions(user_id);
+CREATE INDEX idx_user_actions_type ON user_actions(action_type);
+CREATE INDEX idx_user_actions_created ON user_actions(created_at DESC);
+```
+  </Tab>
+</Tabs>
+
+### 1.4 Seed Initial Data
+
+```sql
+-- Seed UAD plugins
+INSERT INTO plugins (id, name, manufacturer, category, price_usd, purchase_url, is_uad) VALUES
+  ('moog-minimoog', 'Moog Minimoog', 'Moog', 'synth', 299, 'https://www.uaudio.com/uad-plugins/synths/moog-minimoog.html', true),
+  ('api-2500', 'API 2500', 'API', 'compressor', 299, 'https://www.uaudio.com/uad-plugins/compressors-limiters/api-2500.html', true),
+  ('neve-1073', 'Neve 1073', 'Neve', 'eq', 299, 'https://www.uaudio.com/uad-plugins/channel-strips/neve-1073.html', true),
+  ('la2a', 'Teletronix LA-2A', 'Teletronix', 'compressor', 299, 'https://www.uaudio.com/uad-plugins/compressors-limiters/la-2a.html', true),
+  ('1176', 'UREI 1176', 'UREI', 'compressor', 299, 'https://www.uaudio.com/uad-plugins/compressors-limiters/1176.html', true),
+  ('lexicon-224', 'Lexicon 224', 'Lexicon', 'reverb', 349, 'https://www.uaudio.com/uad-plugins/reverbs/lexicon-224.html', true);
+
+-- Seed initial presets
+INSERT INTO presets (plugin_id, preset_name, description, tags, characteristics, is_official) VALUES
+  ('moog-minimoog', 'Thick Bass', 'Warm analog bass with thick sustain, perfect for synthwave and retro productions',
+   ARRAY['bass', 'analog', 'warm', 'sustained', 'thick'],
+   '{"timbre": "warm", "envelope": "sustained", "brightness": 0.3, "aggression": 0.2, "thickness": 0.8}'::jsonb,
+   true),
+
+  ('moog-minimoog', 'Punchy Lead', 'Bright, aggressive lead sound with fast attack',
+   ARRAY['lead', 'bright', 'aggressive', 'fast', 'punchy'],
+   '{"timbre": "bright", "envelope": "fast", "brightness": 0.8, "aggression": 0.9, "thickness": 0.5}'::jsonb,
+   true),
+
+  ('api-2500', 'Vocal Glue', 'Smooth, transparent compression perfect for vocals',
+   ARRAY['vocals', 'compression', 'smooth', 'transparent'],
+   '{"aggression": 0.3, "transparency": 0.9, "color": 0.4, "use_case": "vocals"}'::jsonb,
+   true),
+
+  ('neve-1073', 'Warm Vocal EQ', 'Classic Neve warmth for vocals, presence boost',
+   ARRAY['vocals', 'eq', 'warm', 'presence'],
+   '{"warmth": 0.8, "brightness": 0.6, "clarity": 0.7, "use_case": "vocals"}'::jsonb,
+   true);
+```
+
+---
+
+## Day 2: Backend API
+
+### 2.1 Project Setup
+
+```bash
+mkdir zoo-platform && cd zoo-platform
+
+npm init -y
+
+# Core dependencies
+npm install express @clerk/clerk-sdk-node @neondatabase/serverless \
+  openai @anthropic-ai/sdk @sentry/node portkey-ai posthog-node \
+  dotenv cors helmet express-rate-limit uuid zod
+
+# Dev dependencies
+npm install -D typescript @types/node @types/express tsx nodemon \
+  prettier eslint
+
+npx tsc --init
+```
+
+### 2.2 Project Structure
+
+```
+zoo-platform/
+├── src/
+│   ├── index.ts                 # Express app entry
+│   ├── config/
+│   │   ├── env.ts               # Environment validation
+│   │   ├── clerk.ts             # Clerk config
+│   │   ├── portkey.ts           # Portkey config
+│   │   └── sentry.ts            # Sentry config
+│   ├── db/
+│   │   ├── index.ts             # Neon client
+│   │   ├── queries.ts           # SQL queries
+│   │   └── embeddings.ts        # Vector operations
+│   ├── routes/
+│   │   ├── experiments.ts       # POST /v1/run
+│   │   ├── sessions.ts          # GET /sessions/:id
+│   │   ├── presets.ts           # GET /presets
+│   │   └── webhooks.ts          # Clerk webhooks
+│   ├── services/
+│   │   ├── llm.ts               # Portkey LLM calls
+│   │   ├── tools.ts             # Tool execution
+│   │   ├── embeddings.ts        # Generate embeddings
+│   │   └── analytics.ts         # PostHog tracking
+│   ├── middleware/
+│   │   ├── auth.ts              # Clerk JWT validation
+│   │   ├── errors.ts            # Error handling
+│   │   ├── ratelimit.ts         # Rate limiting
+│   │   └── logging.ts           # Request logging
+│   └── types/
+│       └── index.ts             # Shared types
+├── package.json
+├── tsconfig.json
+└── .env
+```
+
+### 2.3 Key Services
+
+<CodeGroup>
+```typescript src/config/env.ts
+import { z } from 'zod';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const envSchema = z.object({
+  DATABASE_URL: z.string().url(),
+  CLERK_SECRET_KEY: z.string().startsWith('sk_'),
+  PORTKEY_API_KEY: z.string(),
+  OPENAI_API_KEY: z.string().startsWith('sk-'),
+  ANTHROPIC_API_KEY: z.string().startsWith('sk-ant-'),
+  SENTRY_DSN: z.string().url(),
+  POSTHOG_API_KEY: z.string(),
+  PORT: z.string().default('3000'),
+});
+
+export const env = envSchema.parse(process.env);
+```
+
+```typescript src/middleware/auth.ts
+import { clerkClient } from '@clerk/clerk-sdk-node';
+import { Request, Response, NextFunction } from 'express';
+
+export async function authenticate(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const token = req.headers.authorization?.substring(7);
+
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const decoded = await clerkClient.verifyToken(token);
+    const user = await db.getUserByClerkId(decoded.sub);
+
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+```
+
+```typescript src/services/llm.ts
+import Portkey from 'portkey-ai';
+import { env } from '../config/env';
+
+const portkey = new Portkey({
+  apiKey: env.PORTKEY_API_KEY,
+  config: {
+    strategy: { mode: 'fallback' },
+    targets: [
+      {
+        provider: 'openai',
+        api_key: env.OPENAI_API_KEY,
+        override_params: { model: 'gpt-4o-mini' }
+      },
+      {
+        provider: 'anthropic',
+        api_key: env.ANTHROPIC_API_KEY,
+        override_params: { model: 'claude-3-5-sonnet-latest' }
+      }
+    ]
+  }
+});
+
+export async function callLLM(params) {
+  const startTime = Date.now();
+
+  const response = await portkey.chat.completions.create({
+    messages: params.messages,
+    tools: params.tools,
+    max_tokens: params.maxTokens,
+    temperature: params.temperature
+  });
+
+  const latencyMs = Date.now() - startTime;
+
+  await logLLMCall({
+    model: response.model,
+    provider: response._headers['x-portkey-provider'],
+    usage: response.usage,
+    latencyMs,
+    status: 'success'
+  });
+
+  return response;
+}
+```
+</CodeGroup>
+
+### 2.4 Vector Search Implementation
+
+```typescript
+// src/services/tools.ts
+
+async function search_presets(args: {
+  description: string;
+  tags?: string[];
+  pluginId?: string;
+  limit?: number;
+}) {
+  const { description, tags, pluginId, limit = 5 } = args;
+
+  // Generate embedding for search query
+  const embedding = await generateEmbedding(description);
+
+  // Vector similarity search with filters
+  const results = await sql`
+    WITH ranked_presets AS (
+      SELECT
+        p.*,
+        pl.name as plugin_name,
+        pl.is_uad,
+        pl.price_usd,
+        pl.purchase_url,
+        1 - (p.embedding <=> ${embedding}::vector) as similarity,
+        CASE WHEN p.plugin_id = ANY(${userPlugins})
+          THEN 1 ELSE 0 END as owned
+      FROM presets p
+      JOIN plugins pl ON pl.id = p.plugin_id
+      WHERE
+        p.embedding IS NOT NULL
+        ${pluginId ? sql`AND p.plugin_id = ${pluginId}` : sql``}
+        ${tags ? sql`AND p.tags && ${tags}` : sql``}
+      ORDER BY p.embedding <=> ${embedding}::vector
+      LIMIT ${limit * 2}
+    )
+    SELECT * FROM ranked_presets
+    WHERE similarity > 0.7
+    ORDER BY owned DESC, similarity DESC
+    LIMIT ${limit}
+  `;
+
+  return {
+    presets: results.map(r => ({
+      id: r.id,
+      name: r.preset_name,
+      description: r.description,
+      plugin: r.plugin_name,
+      tags: r.tags,
+      characteristics: r.characteristics,
+      similarity: r.similarity,
+      owned: r.owned,
+      price: r.price_usd,
+      purchaseUrl: r.purchase_url
+    }))
+  };
+}
+```
+
+---
+
+## Day 3: Frontend (Next.js)
+
+### 3.1 Setup
+
+```bash
+npx create-next-app@latest zoo-frontend --typescript --tailwind --app
+cd zoo-frontend
+
+npm install @clerk/nextjs @tanstack/react-query axios posthog-js \
+  react-markdown @headlessui/react @heroicons/react
+```
+
+### 3.2 Project Structure
+
+```
+zoo-frontend/
+├── app/
+│   ├── layout.tsx              # Root layout with Clerk
+│   ├── page.tsx                # Landing page
+│   ├── chat/
+│   │   └── page.tsx            # Chat interface
+│   ├── presets/
+│   │   ├── page.tsx            # Browse presets
+│   │   └── [id]/page.tsx       # Preset detail
+│   └── api/
+│       └── chat/route.ts       # API proxy
+├── components/
+│   ├── ChatInterface.tsx       # Main chat UI
+│   ├── PresetCard.tsx          # Preset display
+│   ├── AudioPlayer.tsx         # Audio preview
+│   └── Navigation.tsx
+└── lib/
+    ├── api.ts                  # API client
+    └── posthog.ts              # Analytics
+```
+
+### 3.3 Key Components
+
+<CodeGroup>
+```typescript app/layout.tsx
+import { ClerkProvider } from '@clerk/nextjs';
+
+export default function RootLayout({ children }) {
+  return (
+    <ClerkProvider>
+      <html lang="en">
+        <body>{children}</body>
+      </html>
+    </ClerkProvider>
+  );
+}
+```
+
+```typescript components/ChatInterface.tsx
+'use client';
+
+import { useState } from 'react';
+import { useAuth } from '@clerk/nextjs';
+
+export default function ChatInterface() {
+  const { getToken } = useAuth();
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+
+  async function sendMessage() {
+    const token = await getToken();
+
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message: input })
+    });
+
+    const data = await response.json();
+    setMessages([...messages, data]);
+  }
+
+  return (
+    <div className="flex flex-col h-screen">
+      <div className="flex-1 overflow-y-auto p-4">
+        {messages.map((msg, i) => (
+          <div key={i}>{msg.content}</div>
+        ))}
+      </div>
+      <div className="p-4 border-t">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+          className="w-full px-4 py-2 border rounded"
+          placeholder="Describe the sound you want..."
+        />
+      </div>
+    </div>
+  );
+}
+```
+</CodeGroup>
+
+---
+
+## Day 4: Integration & Testing
+
+### 4.1 Generate Embeddings
+
+```typescript
+// scripts/generate-embeddings.ts
+
+import { neon } from '@neondatabase/serverless';
+import OpenAI from 'openai';
+
+const sql = neon(process.env.DATABASE_URL!);
+const openai = new OpenAI();
+
+async function generateEmbeddings() {
+  const presets = await sql`
+    SELECT id, preset_name, description, tags, characteristics
+    FROM presets WHERE embedding IS NULL
+  `;
+
+  console.log(`Generating embeddings for ${presets.length} presets...`);
+
+  for (const preset of presets) {
+    const text = `
+      Preset: ${preset.preset_name}
+      Description: ${preset.description}
+      Tags: ${preset.tags.join(', ')}
+      Characteristics: ${JSON.stringify(preset.characteristics)}
+    `.trim();
+
+    const response = await openai.embeddings.create({
+      model: 'text-embedding-ada-002',
+      input: text
+    });
+
+    const embedding = response.data[0].embedding;
+
+    await sql`
+      UPDATE presets
+      SET embedding = ${JSON.stringify(embedding)}::vector
+      WHERE id = ${preset.id}
+    `;
+
+    console.log(`✓ ${preset.preset_name}`);
+  }
+
+  console.log('Done!');
+}
+
+generateEmbeddings();
+```
+
+Run it:
+```bash
+tsx scripts/generate-embeddings.ts
+```
+
+### 4.2 Deploy to Railway
+
+```bash
+# Initialize git
+git init && git add . && git commit -m "Initial Preset Detective MVP"
+
+# Create GitHub repo
+gh repo create zoo-platform --private --source=. --push
+
+# Deploy backend to Railway
+railway init && railway link && railway up
+
+# Deploy frontend to Vercel
+cd zoo-frontend && vercel
+```
+
+### 4.3 Test Cases
+
+<Check>User sign up (Clerk)</Check>
+<Check>Chat: "I need a warm analog bass"</Check>
+<Check>AI recommends 3-5 presets with reasoning</Check>
+<Check>User clicks preset card</Check>
+<Check>User clicks "Purchase Plugin" (if not owned)</Check>
+<Check>Check PostHog for events</Check>
+<Check>Check Sentry for errors</Check>
+<Check>Verify database logs usage correctly</Check>
+
+---
+
+## Day 5: Alpha Launch Prep
+
+### 5.1 Seed More Presets
+
+Manually add 40-60 more UAD presets across different plugins:
+- Bass presets (10-15)
+- Lead presets (10-15)
+- Vocal chain presets (10-15)
+- Drum processing (5-10)
+- Mix bus compression (5-10)
+
+Run embedding generation script again.
+
+### 5.2 Alpha Tester Email
+
+<Card title="Email Template">
+**Subject:** Try Preset Detective (Internal Alpha)
+
+You're invited to test Preset Detective - our AI preset discovery tool.
+
+**What it does:** Describe a sound (e.g., "warm analog bass") and get specific UAD preset recommendations.
+
+**Try it:** https://zoo.uaudio.com/chat
+
+**Please:**
+- Use it 3+ times this week
+- Mark recommendations helpful/not helpful
+- Report bugs in #preset-detective-alpha
+
+Feedback call: Friday 2pm PT
+</Card>
+
+### 5.3 Invite 10-15 Alpha Testers
+
+- Internal UA producers/engineers
+- Mix of roles (music producers, sound designers, mix engineers)
+- Ask them to test 3+ times this week
+- Scheduled check-in Friday
+
+---
+
+## Weeks 2-8: Fill or Kill Process
+
+### Week 2-3: Internal Alpha
+
+**Goals:**
+- 60%+ of testers use it 3+ times
+- 70%+ find recommendations helpful
+- Identify bugs and missing presets
+
+**Key Metrics:**
+```sql
+-- Daily active users
+SELECT DATE(created_at), COUNT(DISTINCT user_id)
+FROM sessions
+WHERE created_at > NOW() - INTERVAL '7 days'
+GROUP BY DATE(created_at);
+
+-- Preset performance
+SELECT
+  p.preset_name,
+  p.plugin_id,
+  COUNT(DISTINCT ua.user_id) as views,
+  AVG((ua.metadata->>'helpful')::float) as helpfulness
+FROM presets p
+LEFT JOIN user_actions ua ON ua.target_id = p.id::text
+GROUP BY p.id, p.preset_name, p.plugin_id
+ORDER BY views DESC LIMIT 20;
+```
+
+### Week 4-5: External Beta
+
+**Add Features:**
+- Audio upload (analyze user's audio, suggest matching presets)
+- Preset comparison (compare 2-3 presets side-by-side)
+- Save favorites
+- Share preset recommendations
+
+**Expand Data:**
+- 100+ presets across all UAD categories
+- User-contributed presets (with moderation)
+
+**Recruit 50-100 beta users:**
+- Forum announcement
+- Newsletter
+- Direct outreach to power users
+
+### Week 6-7: Measurement & Iteration
+
+**Key Metrics:**
+
+| Metric | Target |
+|--------|--------|
+| Day 7 retention | More than 25% |
+| Activation (sent first message) | More than 50% |
+| Helpfulness rating | More than 65% |
+| Purchase intent clicks | More than 10% |
+| Cost per session | Less than 0.30 |
+
+**Iterate Based on Data:**
+- What searches return no good results? Add more presets
+- What plugins are most requested? Prioritize those
+- Where do users drop off? Improve UX
+- What questions confuse the AI? Update system prompt
+
+### Week 8: Fill or Kill Decision
+
+<Tabs>
+  <Tab title="Fill Criteria">
+**Required (Must Hit ALL):**
+- Day 7 retention more than 25%
+- NPS more than 30
+- Clear user persona
+- Sustainable unit economics
+- Team excited to maintain it
+
+**If YES → Fill:**
+- Allocate ongoing resources (0.25-0.5 FTE)
+- Announce publicly
+- Set 90-day roadmap
+- Move from "experiment" to "product"
+  </Tab>
+
+  <Tab title="Kill Criteria">
+**Kill if Missing Any:**
+- Less than 25% Day 7 retention
+- NPS less than 30
+- No clear use cases
+- Cost per session more than 0.50
+- Team not excited to maintain
+
+**If NO → Kill:**
+- Document learnings (30-60 min)
+- Archive code
+- Thank beta users, offer alternative
+- Move team to next experiment
+- No shame - killing fast is the goal
+  </Tab>
+</Tabs>
+
+---
+
+## Cost Summary
+
+### Infrastructure (Month 1)
+
+| Service | Cost |
+|---------|------|
+| Neon | 25 (pro tier for pgvector) |
+| Railway | 20 (hobby) |
+| Vercel | 0 (hobby tier) |
+| Clerk | 25 (up to 10K MAU) |
+| Portkey | 0-50 (usage-based) |
+| Sentry | 0 (free tier) |
+| PostHog | 0 (free tier 1M events) |
+| **Total** | **70-120 per month** |
+
+### LLM Costs (Month 1, around 500 sessions)
+
+| Service | Cost |
+|---------|------|
+| GPT-4o-mini | Around 15 |
+| Embeddings | Around 5 |
+| **Total** | **Around 20 per month** |
+
+**Grand Total:** Around 90-140 per month
+
+### Engineering Time
+
+- Week 1: 30-40 hours
+- Weeks 2-8: 10-20 hours per week (iteration)
+- **Total:** 150-200 hours
+
+At 150 per hour = **22.5K-30K for full 8-week cycle**
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Start Day 1" icon="play">
+    Provision services and set up infrastructure
+  </Card>
+  <Card title="Review 8-Week Process" icon="calendar" href="/zoo/process/eight-week-cycle">
+    Understand the complete fill-or-kill framework
+  </Card>
+  <Card title="View All Experiments" icon="flask" href="/zoo/experiments/overview">
+    Explore other music AI experiments
+  </Card>
+  <Card title="Architecture Deep Dive" icon="diagram-project" href="/zoo/architecture/overview">
+    Technical architecture and platform design
+  </Card>
+</CardGroup>

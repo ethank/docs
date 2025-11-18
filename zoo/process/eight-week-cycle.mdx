@@ -1,0 +1,372 @@
+---
+title: "8-Week Fill or Kill Process"
+description: "Rapid validation framework for AI experiments with clear success criteria and kill signals"
+icon: "calendar-check"
+---
+
+## Philosophy
+
+Every AI experiment must **prove value in 8 weeks or get killed**. No exceptions. No "just needs more time." If users don't love it by Week 8, they never will.
+
+<Warning>
+**Fill:** Ship to production, allocate ongoing resources, iterate
+
+**Kill:** Document learnings, archive code, move to next experiment
+</Warning>
+
+---
+
+## The Framework
+
+```
+Week 1-2: PROTOTYPE → Can we build this?
+Week 3-4: ALPHA → Does our team want this?
+Week 5-6: BETA → Do real users want this?
+Week 7-8: DECISION → Fill or Kill?
+```
+
+---
+
+## Phase 1: Prototype (Weeks 1-2)
+
+### Goal
+Build the simplest possible version to test core hypothesis.
+
+### Entry Criteria
+- Clear problem statement (1 sentence)
+- Target user persona defined
+- Success metric identified (1 metric only)
+- Zoo platform deployed
+
+### What to Build
+
+**Minimum:**
+- System prompt (100-500 words)
+- 0-2 custom tools (if needed)
+- Basic testing via API/CLI
+
+**Explicitly DON'T build:**
+- Custom UI (use generic chat interface)
+- Polish or edge cases
+- Integrations
+- Analytics beyond basic logging
+
+### Success Metrics
+
+<Check>Answers 70%+ of test questions correctly</Check>
+<Check>Average response time less than 3 seconds</Check>
+<Check>No hallucinations or harmful advice</Check>
+<Check>Team agrees it's "interesting"</Check>
+
+### Kill Criteria
+
+<Warning>
+Stop immediately if:
+- Can't answer basic questions (less than 50% accuracy)
+- Consistently gives wrong or dangerous advice
+- Takes more than 10 seconds per response
+- Team consensus is "this isn't useful"
+</Warning>
+
+### Deliverables
+- Working experiment in Zoo platform
+- 10 test conversations documented
+- One-page brief: problem, approach, results
+- Go/no-go decision for Alpha
+
+**Time Budget:** 12-16 hours engineering
+
+---
+
+## Phase 2: Alpha (Weeks 3-4)
+
+### Goal
+Test with internal users who care about the problem.
+
+### Entry Criteria
+- Prototype showed more than 70% accuracy
+- Team wants to use it themselves
+- Identified 10-15 internal alpha testers
+- Basic error handling added
+
+### What to Build
+
+**Add:**
+- Simple web UI (can be ugly but functional)
+- Session management (conversation continuity)
+- Basic usage tracking
+- 1-2 critical tools (if needed)
+
+### Alpha Testing Plan
+
+**Invite 10-15 internal users who:**
+- Have the problem you're solving
+- Will give honest feedback
+- Can test 2-3 times per week
+
+**Measure:**
+- Daily active users
+- Messages per session
+- Retention (% who come back Day 2, Day 7)
+- "Would you be sad if this went away?"
+
+### Success Metrics
+
+<Check>60%+ of testers use it 3+ times</Check>
+<Check>Average session more than 3 messages (engaged)</Check>
+<Check>40%+ return after 7 days</Check>
+<Check>NPS more than 7 (would recommend)</Check>
+<Check>Less than 5% error rate</Check>
+
+### Kill Criteria
+
+<Warning>
+Kill if:
+- Less than 40% of testers use it more than once
+- Average session equals 1 message (not engaging)
+- Negative feedback from more than 30% of users
+- "It's fine but I wouldn't pay for it"
+</Warning>
+
+### Deliverables
+- Web UI deployed
+- 10-15 alpha users onboarded
+- Usage dashboard (sessions/day, retention)
+- User feedback summary
+- Go/no-go decision for Beta
+
+**Time Budget:** 20-30 hours engineering
+
+---
+
+## Phase 3: Beta (Weeks 5-6)
+
+### Goal
+Validate with real external users. Test willingness to pay.
+
+### Entry Criteria
+- Alpha retention more than 40% (Day 7)
+- Multiple users calling it "helpful" or "game-changing"
+- Core bugs fixed
+- Pricing/tier strategy defined
+
+### What to Build
+
+**Add:**
+- Polished UI (not beautiful, just not embarrassing)
+- Proper authentication (Clerk)
+- Rate limiting by tier
+- Onboarding flow
+- Analytics (PostHog)
+
+### Beta Testing Plan
+
+**Recruit 50-100 external users:**
+- Announce in newsletter, forum, social
+- Target users who recently contacted support
+- Offer early access
+
+**Measure:**
+- Sign-ups to activated (asked first question)
+- Activation to retention (came back)
+- Retention to advocates (NPS more than 8)
+- Free to paid conversion (if monetizing)
+- Cost per session
+
+### Success Metrics
+
+<Check>50+ beta users signed up</Check>
+<Check>40%+ activation rate</Check>
+<Check>25%+ Day 7 retention</Check>
+<Check>NPS more than 30</Check>
+<Check>Cost per session less than $0.50</Check>
+<Check>Clear use cases emerging</Check>
+
+### Kill Criteria
+
+<Warning>
+Kill if:
+- Less than 20% activation
+- Less than 15% Day 7 retention
+- NPS less than 0
+- Cost per session more than $2
+- "It's cool but I wouldn't pay"
+</Warning>
+
+### Deliverables
+- Production-ready app
+- 50-100 beta users onboarded
+- Analytics dashboard
+- User interviews (5-10)
+- Business case
+- Go/no-go decision for Production
+
+**Time Budget:** 30-40 hours engineering
+
+---
+
+## Phase 4: Decision (Weeks 7-8)
+
+### Fill Decision (Ship to Production)
+
+**Required (Must Hit ALL):**
+- Day 7 retention more than 25%
+- NPS more than 30
+- Clear user persona
+- Sustainable unit economics
+- Team excited to maintain it
+
+**If YES → Fill:**
+- Allocate ongoing resources (0.25-0.5 FTE)
+- Announce publicly
+- Set 90-day roadmap
+- Move from "experiment" to "product"
+
+### Kill Decision (Archive and Learn)
+
+**If NO → Kill:**
+- Document learnings (30-60 min)
+- Archive code
+- Thank beta users, offer alternative
+- Move team to next experiment
+- **No shame** - killing fast is the goal
+
+### Example Kill Write-Up
+
+```markdown
+# Experiment: [Name] - KILLED
+
+## Hypothesis
+[What we thought would happen]
+
+## What We Built
+[MVP scope, timeline, users]
+
+## Results
+- Activation: [X%]
+- Retention: [Y%]
+- Key feedback: [quotes]
+
+## Why We Killed It
+[Primary reason]
+
+## Learnings
+1. [Learning 1]
+2. [Learning 2]
+3. [Learning 3]
+
+## Next Experiment
+[What we're trying instead]
+
+## Cost
+Engineering: [X hours] ([dollar amount])
+Infrastructure: [dollar amount]
+Total: [dollar amount] to validate
+
+**Value:** Prevented [larger dollar amount] full build-out
+```
+
+---
+
+## Decision Scorecard
+
+Use this to make Fill/Kill objective:
+
+| Criterion | Weight | Score (0-10) | Weighted |
+|-----------|--------|--------------|----------|
+| Day 7 Retention | 30% | | |
+| User Satisfaction (NPS) | 25% | | |
+| Unit Economics | 20% | | |
+| Strategic Fit | 15% | | |
+| Team Conviction | 10% | | |
+| **TOTAL** | 100% | | |
+
+**Fill if: Total more than 70**
+
+**Kill if: Total less than 70**
+
+---
+
+## Resource Planning
+
+### Per-Experiment Budget
+
+| Phase | Engineering | Product | Research | Total Hours | Cost |
+|-------|-------------|---------|----------|-------------|------|
+| Prototype | 12-16h | 4-6h | 2-4h | Approximately 20h | $3K |
+| Alpha | 20-30h | 10-15h | 5-10h | Approximately 50h | $7.5K |
+| Beta | 30-40h | 15-20h | 10-15h | Approximately 75h | $11K |
+| Decision | 5-10h | 5-10h | 5-10h | Approximately 20h | $3K |
+| **TOTAL** | **67-96h** | **34-51h** | **22-39h** | **165h** | **$24.5K** |
+
+**Infrastructure:** $50-200 for 8 weeks
+
+**Total per experiment: Approximately $25K to validate**
+
+---
+
+## Success Pattern Recognition
+
+### Good Signs (Keep Going)
+- Users ask "When can I share this with my friend?"
+- Organic word-of-mouth (unprompted shares)
+- Users create workarounds to use it more
+- Clear use case emerges ("I use it every time I X")
+- Retention improves week-over-week
+
+### Warning Signs (Evaluate Carefully)
+- "This is cool" but no return usage
+- High activation but low retention
+- Users ask for features that change core concept
+- Retention flat or declining
+- Cost per user increasing
+
+### Red Flags (Strong Kill Signal)
+- "I tried it once, don't need it again"
+- Users ghost after first session
+- Can't articulate who it's for
+- Team losing interest
+- Economics don't work even at scale
+
+---
+
+## Frequently Asked Questions
+
+<AccordionGroup>
+  <Accordion title="What if we're at 68 on the scorecard? (Just below 70)">
+    Kill it. If it's not a clear YES, it's a NO. Marginal experiments drain resources from great ones.
+  </Accordion>
+
+  <Accordion title="What if users love it but economics don't work?">
+    Kill it unless you see a clear path to fix economics in 2-4 weeks. Emotional attachment kills companies.
+  </Accordion>
+
+  <Accordion title="Can we extend to 10 weeks if we're close?">
+    No. 8 weeks is plenty. If you can't prove value in 8 weeks, you won't prove it in 12. Move on.
+  </Accordion>
+
+  <Accordion title="What if leadership wants us to keep going?">
+    Show them the data. Explain opportunity cost. If they insist, get it in writing and set a hard deadline.
+  </Accordion>
+
+  <Accordion title="How many experiments should we run simultaneously?">
+    Start with 1. Once you have 2-3 FTE on platform work, max 3 experiments. More equals slower.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Start First Experiment" icon="play" href="/zoo/experiments/overview">
+    Review 5 ready-to-build music AI experiments
+  </Card>
+  <Card title="Week 1 Quick Start" icon="bolt" href="/zoo/quick-start">
+    Build platform in 5 days
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember:** The goal is to learn fast, not to be right. Kill fast, kill often, ship winners.
+</Tip>

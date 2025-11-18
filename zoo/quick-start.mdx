@@ -1,0 +1,489 @@
+---
+title: "Quick Start - Build in 5 Days"
+description: "Production-grade Zoo platform setup with Clerk, Railway, Portkey, and pgvector"
+icon: "bolt"
+---
+
+## Overview
+
+Build a production-ready AI platform in **5 days** using battle-tested infrastructure. This guide assumes you already know Clerk, Railway, and modern web development.
+
+<Info>
+**Target:** Working platform + first experiment (Preset Detective) deployed with 10-15 alpha testers by end of Week 1
+</Info>
+
+---
+
+## Day 1: Infrastructure Setup
+
+### Services to Provision
+
+<Steps>
+  <Step title="Neon Database">
+    Create project at [neon.tech](https://neon.tech)
+
+    - Enable `pgvector` extension
+    - Copy connection string
+    - Set up staging + production branches
+  </Step>
+
+  <Step title="Clerk Authentication">
+    Create application at [clerk.com](https://clerk.com)
+
+    - Enable: Email, Google, GitHub
+    - Configure JWT template (include `user_id`, `email`, `metadata`)
+    - Copy publishable + secret keys
+  </Step>
+
+  <Step title="Portkey LLM Gateway">
+    Create workspace at [portkey.ai](https://portkey.ai)
+
+    - Add OpenAI provider (primary)
+    - Add Anthropic provider (fallback)
+    - Configure fallback strategy
+    - Copy API key + config ID
+  </Step>
+
+  <Step title="Observability Tools">
+    **Sentry**: Create Node.js project at [sentry.io](https://sentry.io)
+
+    **PostHog**: Create project at [posthog.com](https://posthog.com)
+
+    **Railway**: Create project at [railway.app](https://railway.app)
+  </Step>
+</Steps>
+
+### Environment Variables
+
+Create `.env` file:
+
+```bash
+# Database
+DATABASE_URL=postgresql://...
+
+# Clerk
+CLERK_PUBLISHABLE_KEY=pk_...
+CLERK_SECRET_KEY=sk_...
+CLERK_WEBHOOK_SECRET=whsec_...
+
+# Portkey
+PORTKEY_API_KEY=...
+PORTKEY_CONFIG_ID=...
+
+# Direct LLM (for embeddings)
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Observability
+SENTRY_DSN=https://...
+POSTHOG_API_KEY=phc_...
+POSTHOG_HOST=https://app.posthog.com
+
+# App
+NODE_ENV=development
+PORT=3000
+FRONTEND_URL=http://localhost:3001
+```
+
+### Database Schema
+
+Run initial migrations:
+
+```sql
+-- Enable extensions
+CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+-- Users (synced from Clerk)
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT UNIQUE NOT NULL,
+  email TEXT NOT NULL,
+  full_name TEXT,
+  avatar_url TEXT,
+  tier TEXT DEFAULT 'free',
+  owned_plugins TEXT[] DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Plugins catalog
+CREATE TABLE plugins (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  manufacturer TEXT,
+  category TEXT,
+  price_usd DECIMAL(10,2),
+  purchase_url TEXT,
+  is_uad BOOLEAN DEFAULT false
+);
+
+-- Presets (with vector embeddings)
+CREATE TABLE presets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  plugin_id TEXT REFERENCES plugins(id),
+  preset_name TEXT NOT NULL,
+  description TEXT,
+  tags TEXT[] DEFAULT '{}',
+  characteristics JSONB DEFAULT '{}',
+  embedding vector(1536), -- OpenAI ada-002
+  is_official BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_presets_embedding ON presets
+  USING ivfflat(embedding vector_cosine_ops) WITH (lists = 100);
+
+-- Experiments
+CREATE TABLE experiments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  system_prompt TEXT NOT NULL,
+  model TEXT DEFAULT 'gpt-4o-mini',
+  tools JSONB DEFAULT '[]',
+  enabled BOOLEAN DEFAULT true
+);
+
+-- AI Sessions
+CREATE TABLE sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  experiment_id UUID REFERENCES experiments(id),
+  messages JSONB DEFAULT '[]',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- LLM call tracking
+CREATE TABLE llm_calls (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id UUID REFERENCES sessions(id),
+  model TEXT NOT NULL,
+  provider TEXT,
+  prompt_tokens INT,
+  completion_tokens INT,
+  cost_usd DECIMAL(10,6),
+  latency_ms INT,
+  status TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+<Tip>
+See [full schema](https://github.com/your-repo/zoo/blob/main/migrations) for complete database setup including indexes and views.
+</Tip>
+
+---
+
+## Day 2: Backend API
+
+### Project Setup
+
+```bash
+mkdir zoo-platform && cd zoo-platform
+npm init -y
+
+# Core dependencies
+npm install express @clerk/clerk-sdk-node @neondatabase/serverless \
+  openai @anthropic-ai/sdk @sentry/node portkey-ai posthog-node \
+  dotenv cors helmet express-rate-limit uuid zod
+
+# Dev dependencies
+npm install -D typescript @types/node @types/express tsx nodemon
+```
+
+### Key Services
+
+<CodeGroup>
+```typescript src/config/env.ts
+import { z } from 'zod';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const envSchema = z.object({
+  DATABASE_URL: z.string().url(),
+  CLERK_SECRET_KEY: z.string().startsWith('sk_'),
+  PORTKEY_API_KEY: z.string(),
+  OPENAI_API_KEY: z.string().startsWith('sk-'),
+  // ... other env vars
+});
+
+export const env = envSchema.parse(process.env);
+```
+
+```typescript src/middleware/auth.ts
+import { clerkClient } from '@clerk/clerk-sdk-node';
+
+export async function authenticate(req, res, next) {
+  const token = req.headers.authorization?.substring(7);
+
+  const decoded = await clerkClient.verifyToken(token);
+  const user = await db.getUserByClerkId(decoded.sub);
+
+  req.user = user;
+  next();
+}
+```
+
+```typescript src/services/llm.ts
+import Portkey from 'portkey-ai';
+
+const portkey = new Portkey({
+  apiKey: env.PORTKEY_API_KEY,
+  config: {
+    strategy: { mode: 'fallback' },
+    targets: [
+      { provider: 'openai', model: 'gpt-4o-mini' },
+      { provider: 'anthropic', model: 'claude-3-5-sonnet-latest' }
+    ]
+  }
+});
+
+export async function callLLM(params) {
+  const response = await portkey.chat.completions.create({
+    messages: params.messages,
+    tools: params.tools
+  });
+
+  return response;
+}
+```
+</CodeGroup>
+
+### Vector Search for Presets
+
+```typescript
+async function searchPresets(description, userPlugins) {
+  // Generate embedding for search query
+  const embedding = await generateEmbedding(description);
+
+  // Vector similarity search
+  const results = await sql`
+    SELECT
+      p.*,
+      pl.name as plugin_name,
+      1 - (p.embedding <=> ${embedding}::vector) as similarity,
+      pl.id = ANY(${userPlugins}) as owned
+    FROM presets p
+    JOIN plugins pl ON pl.id = p.plugin_id
+    WHERE p.embedding IS NOT NULL
+    ORDER BY p.embedding <=> ${embedding}::vector
+    LIMIT 5
+  `;
+
+  return results.filter(r => r.similarity > 0.65);
+}
+```
+
+---
+
+## Day 3: Frontend (Next.js)
+
+### Setup
+
+```bash
+npx create-next-app@latest zoo-frontend --typescript --tailwind --app
+cd zoo-frontend
+
+npm install @clerk/nextjs @tanstack/react-query axios posthog-js
+```
+
+### Clerk Integration
+
+```typescript app/layout.tsx
+import { ClerkProvider } from '@clerk/nextjs';
+
+export default function RootLayout({ children }) {
+  return (
+    <ClerkProvider>
+      <html lang="en">
+        <body>{children}</body>
+      </html>
+    </ClerkProvider>
+  );
+}
+```
+
+### Chat Interface
+
+```typescript components/ChatInterface.tsx
+'use client';
+
+import { useState } from 'react';
+import { useAuth } from '@clerk/nextjs';
+
+export default function ChatInterface() {
+  const { getToken } = useAuth();
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+
+  async function sendMessage() {
+    const token = await getToken();
+
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message: input })
+    });
+
+    const data = await response.json();
+    setMessages([...messages, data]);
+  }
+
+  return (
+    <div className="flex flex-col h-screen">
+      <div className="flex-1 overflow-y-auto p-4">
+        {messages.map((msg, i) => (
+          <div key={i}>{msg.content}</div>
+        ))}
+      </div>
+      <div className="p-4 border-t">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+## Day 4: Deploy and Test
+
+### Generate Embeddings
+
+```typescript scripts/generate-embeddings.ts
+import { openai } from './config';
+import { sql } from './db';
+
+async function generateEmbeddings() {
+  const presets = await sql`
+    SELECT id, preset_name, description, tags
+    FROM presets WHERE embedding IS NULL
+  `;
+
+  for (const preset of presets) {
+    const text = `${preset.preset_name} ${preset.description} ${preset.tags.join(' ')}`;
+
+    const response = await openai.embeddings.create({
+      model: 'text-embedding-ada-002',
+      input: text
+    });
+
+    await sql`
+      UPDATE presets
+      SET embedding = ${response.data[0].embedding}::vector
+      WHERE id = ${preset.id}
+    `;
+  }
+}
+```
+
+### Deploy to Railway
+
+```bash
+# Backend
+git init && git add . && git commit -m "Initial commit"
+gh repo create zoo-platform --private --source=. --push
+
+railway init && railway link
+railway up
+
+# Set environment variables in Railway dashboard
+```
+
+### Deploy Frontend to Vercel
+
+```bash
+cd zoo-frontend
+vercel
+# Add environment variables in Vercel dashboard
+```
+
+---
+
+## Day 5: Alpha Launch
+
+### Seed Initial Data
+
+```sql
+-- Seed UAD plugins
+INSERT INTO plugins (id, name, manufacturer, category, price_usd, is_uad) VALUES
+  ('moog-minimoog', 'Moog Minimoog', 'Moog', 'synth', 299, true),
+  ('api-2500', 'API 2500', 'API', 'compressor', 299, true),
+  ('neve-1073', 'Neve 1073', 'Neve', 'eq', 299, true);
+
+-- Seed presets
+INSERT INTO presets (plugin_id, preset_name, description, tags, characteristics, is_official) VALUES
+  ('moog-minimoog', 'Thick Bass', 'Warm analog bass with thick sustain',
+   ARRAY['bass', 'analog', 'warm'],
+   '{"timbre": "warm", "thickness": 0.8}'::jsonb, true);
+```
+
+Run embedding generation:
+```bash
+tsx scripts/generate-embeddings.ts
+```
+
+### Invite Alpha Testers
+
+Email 10-15 internal users:
+
+<Card title="Alpha Tester Email Template">
+Subject: Try Preset Detective (Internal Alpha)
+
+You're invited to test Preset Detective - our AI preset discovery tool.
+
+**What it does:** Describe a sound ("warm analog bass") and get specific UAD preset recommendations.
+
+**Try it:** https://zoo.uaudio.com/chat
+
+**Please:**
+- Use it 3+ times this week
+- Mark recommendations helpful/not helpful
+- Report bugs in #preset-detective-alpha
+
+Feedback call: Friday 2pm PT
+</Card>
+
+---
+
+## Week 1 Success Criteria
+
+<Check>Production deployment (Railway + Vercel)</Check>
+<Check>Authentication working (Clerk)</Check>
+<Check>50+ presets with embeddings</Check>
+<Check>Vector search returning relevant results</Check>
+<Check>10-15 alpha testers invited</Check>
+<Check>No critical bugs</Check>
+<Check>Observability configured (Sentry + PostHog)</Check>
+
+---
+
+## Cost Summary
+
+**Month 1:**
+- Infrastructure: $70-120/month
+- LLM Usage: Around $20 (500 sessions)
+- Engineering: Approximately 30-40 hours
+
+**Total: Around $90-140/month + 30-40 hours**
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Week 2-8: Validation" icon="chart-line" href="/zoo/process/eight-week-cycle">
+    Follow the 8-week fill-or-kill process
+  </Card>
+  <Card title="Preset Detective Details" icon="book" href="/zoo/experiments/preset-detective">
+    Complete implementation guide
+  </Card>
+</CardGroup>
