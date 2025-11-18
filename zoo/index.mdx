@@ -1,0 +1,294 @@
+---
+title: "Zoo Platform - AI Prototyping for Music Apps"
+description: "Ship consumer-facing music AI applications in 1-2 weeks instead of months with Universal Audio's rapid prototyping platform"
+icon: "rocket"
+---
+
+## What is Zoo?
+
+Zoo is Universal Audio's **AI prototyping platform** for shipping consumer-facing music applications in 1-2 weeks instead of months.
+
+<Info>
+**Goal:** 8-week "fill or kill" cycles - validate AI products fast, kill losers, scale winners.
+</Info>
+
+## Choose Your Path
+
+<CardGroup cols={3}>
+  <Card title="Build a Music AI App" icon="music" href="/zoo/experiments/overview">
+    Start with Preset Detective, Mix Analyzer, or other music-focused experiments
+  </Card>
+
+  <Card title="Understand Architecture" icon="diagram-project" href="/zoo/architecture/overview">
+    Deep dive into platform design and technical specifications
+  </Card>
+
+  <Card title="Evaluate the Approach" icon="chart-line" href="/zoo/process/eight-week-cycle">
+    Review the 8-week fill-or-kill framework and business case
+  </Card>
+</CardGroup>
+
+---
+
+## Recommended First Experiment: Preset Detective
+
+### What It Is
+
+AI assistant that helps musicians discover UAD presets:
+- **User:** "I need a warm analog bass"
+- **AI:** Recommends 3-5 specific presets with reasoning
+- **Result:** Direct revenue through plugin sales
+
+### Why Start Here
+
+<Check>**Clear ROI** - Plugin/preset sales (~$50K-200K/year potential)</Check>
+<Check>**Fast validation** - Text-only MVP in Week 1, add audio later</Check>
+<Check>**Uses UA moat** - UAD preset catalog + hardware ecosystem</Check>
+<Check>**Simple validation** - Recommendations helpful or not?</Check>
+<Check>**Expandable** - Start with text, add audio analysis in Week 4-6</Check>
+
+### Week 1 Plan
+
+<Steps>
+  <Step title="Infrastructure Setup">
+    Set up Neon, Clerk, Portkey, Sentry, PostHog (4-6 hours)
+  </Step>
+
+  <Step title="Build Backend API">
+    Express + tools + vector search (6-8 hours)
+  </Step>
+
+  <Step title="Build Frontend">
+    Next.js + Clerk + chat UI (6-8 hours)
+  </Step>
+
+  <Step title="Deploy & Test">
+    Railway + Vercel deployment (4-6 hours)
+  </Step>
+
+  <Step title="Launch Alpha">
+    Seed presets, invite 10-15 testers (4 hours)
+  </Step>
+</Steps>
+
+**Total:** ~30-40 hours engineering + $50-100/month infrastructure
+
+**Deliverable:** Working app at https://zoo.uaudio.com with 10-15 alpha users
+
+---
+
+## Technology Stack
+
+<Tabs>
+  <Tab title="Infrastructure">
+    - **Neon** - Postgres with pgvector (preset similarity search)
+    - **Railway** - Backend deployment (auto-scaling)
+    - **Vercel** - Frontend deployment
+    - **Clerk** - Authentication (social login, JWT)
+    - **Portkey** - LLM gateway (OpenAI + Anthropic fallbacks)
+  </Tab>
+
+  <Tab title="Observability">
+    - **Sentry** - Error tracking
+    - **PostHog** - Product analytics
+    - **Neon Analytics** - Database insights
+  </Tab>
+
+  <Tab title="AI/ML">
+    - **OpenAI** - GPT-4o-mini (primary), text-embedding-ada-002 (vectors)
+    - **Anthropic** - Claude 3.5 Sonnet (fallback)
+    - **pgvector** - Semantic preset search
+  </Tab>
+
+  <Tab title="Frontend">
+    - **Next.js 14** - App router, React Server Components
+    - **Tailwind CSS** - Styling
+    - **Clerk Components** - Auth UI
+  </Tab>
+
+  <Tab title="Backend">
+    - **Express** - REST API
+    - **TypeScript** - Type safety
+    - **Zod** - Runtime validation
+  </Tab>
+</Tabs>
+
+**Cost:** ~$90-140/month + LLM usage (~$20/500 sessions)
+
+---
+
+## 8-Week Timeline
+
+<AccordionGroup>
+  <Accordion title="Week 1: MVP Build" icon="rocket">
+    - Day 1-5: Build platform + Preset Detective
+    - **Output:** Working app deployed
+  </Accordion>
+
+  <Accordion title="Week 2-3: Internal Alpha" icon="users">
+    - 10-15 UA producers test
+    - **Goal:** 60%+ use it 3+ times, 70%+ find helpful
+  </Accordion>
+
+  <Accordion title="Week 4-5: External Beta" icon="user-group">
+    - 50-100 musicians invited
+    - Add: Audio upload, preset comparison
+    - **Goal:** 40%+ activation, 25%+ Day 7 retention
+  </Accordion>
+
+  <Accordion title="Week 6-7: Measure & Iterate" icon="chart-line">
+    - Track metrics, fix issues
+    - Expand preset catalog to 100+
+    - **Goal:** Understand usage patterns, optimize
+  </Accordion>
+
+  <Accordion title="Week 8: Fill or Kill Decision" icon="check-double">
+    - **Fill if:** >25% retention, NPS >30, team excited, cost <$0.50/session
+    - **Kill if:** Below thresholds, users don't return, "cool but wouldn't pay"
+
+    **If FILL:** Move to production, allocate 0.25 FTE, build 90-day roadmap
+
+    **If KILL:** Document learnings, archive, move to next experiment
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Success Metrics
+
+### Week 1 (MVP)
+
+| Metric | Target |
+|--------|--------|
+| Time to deploy | < 5 days |
+| Infrastructure cost | < $100/month |
+| Engineering time | < 40 hours |
+| Alpha testers invited | 10-15 |
+
+### Week 8 (Fill or Kill)
+
+| Metric | Fill Threshold | Kill Below |
+|--------|---------------|------------|
+| Day 7 Retention | > 25% | < 15% |
+| NPS | > 30 | < 0 |
+| Activation | > 40% | < 20% |
+| Helpfulness | > 65% | < 40% |
+| Cost/Session | < $0.50 | > $2.00 |
+
+<Warning>
+**Decision:** Must hit ALL fill thresholds to continue. Even one miss = kill.
+</Warning>
+
+---
+
+## Other Experiment Ideas
+
+<CardGroup cols={2}>
+  <Card title="Mix Analyzer" icon="sliders" href="/zoo/experiments/mix-analyzer">
+    "Why does my mix sound muddy?" - Analyzes frequency balance, dynamics, stereo
+  </Card>
+
+  <Card title="Preset Generator" icon="wand-magic-sparkles" href="/zoo/experiments/preset-generator">
+    "Create me a warm analog bass" - Natural language → synthesizer parameters
+  </Card>
+
+  <Card title="Smart Session Setup" icon="layer-group" href="/zoo/experiments/session-setup">
+    "I'm recording guitar and vocals" - Auto-configures DAW routing, plugins
+  </Card>
+
+  <Card title="Sound Finder" icon="magnifying-glass" href="/zoo/experiments/sound-finder">
+    "Bass like Billie Eilish's 'Bad Guy'" - Explains production technique
+  </Card>
+</CardGroup>
+
+<Tip>
+**Pick one.** Run it through the 8-week process. Kill or fill. Repeat.
+</Tip>
+
+---
+
+## Cost Comparison
+
+| Approach | Time | Cost | Risk | Output |
+|----------|------|------|------|--------|
+| **Traditional Build** | 6-12 months | $500K-1M | High | 1 product (might fail) |
+| **Zoo: 3 Experiments** | 24 weeks | $75K | Low | 3 validated ideas, keep winners |
+| **Difference** | 6 months faster | $425K-925K saved | Fail fast | 3x learning |
+
+<Note>
+**Portfolio approach:** Run 10 experiments/year, expect 3-4 to fill, archive 6-7. Ship winners to production.
+</Note>
+
+---
+
+## When to Scale (Move to Full Platform)
+
+**Only after:**
+- ✅ 2-3 experiments validated (filled)
+- ✅ 100+ daily active users across experiments
+- ✅ Clear patterns emerging (shared infrastructure needs)
+- ✅ Team can't iterate fast enough with current setup
+
+**Then add:**
+- Temporal (complex workflow orchestration)
+- Better observability (OpenTelemetry, Grafana)
+- Auto-scaling infrastructure
+- Advanced features (streaming, webhooks)
+
+See [Deployment Roadmap](/zoo/deployment/roadmap) for 12-week production build plan.
+
+**Cost:** $200K over 12 weeks, $3-15K/month ongoing
+
+---
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Build Preset Detective" icon="play" href="/zoo/experiments/preset-detective">
+    Follow the complete Day 1-5 implementation guide
+  </Card>
+
+  <Card title="Explore Other Experiments" icon="flask" href="/zoo/experiments/overview">
+    Review all 5 music AI experiments
+  </Card>
+
+  <Card title="Quick Start Guide" icon="bolt" href="/zoo/quick-start">
+    Production setup with Clerk, Railway, and pgvector
+  </Card>
+</CardGroup>
+
+---
+
+## Frequently Asked Questions
+
+<AccordionGroup>
+  <Accordion title="Do we need the full platform before first experiment?">
+    **No!** Week 1 MVP is enough. Add production features (Temporal, etc.) only when needed.
+  </Accordion>
+
+  <Accordion title="What if our first experiment fails?">
+    **Perfect!** You learned in 8 weeks for $25K instead of 6 months for $500K. Pick next experiment.
+  </Accordion>
+
+  <Accordion title="How many experiments can we run simultaneously?">
+    Start with **1**. Max **3** with a dedicated team. More = context switching = slower.
+  </Accordion>
+
+  <Accordion title="Can we extend past 8 weeks if we're close?">
+    **No.** 8 weeks is plenty. If you can't prove value in 8 weeks, you won't in 12. Kill and move on.
+  </Accordion>
+
+  <Accordion title="What about audio processing / ML models?">
+    Start with text/features only (Week 1). Add audio processing Week 4-6 if validated. **No premature optimization.**
+  </Accordion>
+
+  <Accordion title="Which experiment should we start with?">
+    **Preset Detective.** Clear ROI, fastest validation, uses UA moat, text-only MVP.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+<Card title="Ready to Start Building?" icon="rocket" href="/zoo/experiments/preset-detective">
+  Begin with Preset Detective - Day 1 implementation guide
+</Card>
