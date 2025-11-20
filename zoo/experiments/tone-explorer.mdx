@@ -675,15 +675,15 @@ Pivot or kill the experiment:
 ## Technical Architecture (Level 3)
 
 ```mermaid
-graph TD
-    A[User: "warm blues tone"] --> B[Text Embedding]
+flowchart TD
+    A["User: 'warm blues tone'"] --> B[Text Embedding]
     B --> C[Vector Search Tone DB]
-    C --> D[LLM: Generate Chain]
+    C --> D["LLM: Generate Chain"]
     D --> E[Parameter JSON]
     E --> F[Audio Synthesis]
     F --> G[Demo MP3]
     G --> H[User Listens]
-    H --> I[User: "more drive"]
+    H --> I["User: 'more drive'"]
     I --> D
 
     style A fill:#4F46E5
