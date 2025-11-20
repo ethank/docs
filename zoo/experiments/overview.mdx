@@ -189,6 +189,44 @@ Each experiment is designed for an 8-week "fill or kill" validation cycle with c
 
 ---
 
+### 6. Tone Explorer
+
+**What it does:** Educational tool that teaches musicians how to build iconic guitar tones using signal chains
+
+**User flow:**
+- Musician browses tone categories (Clean Jazz, Warm Blues, Classic Rock, etc.)
+- Clicks to hear 10-second demo
+- Sees complete signal chain breakdown: plugin names, parameter settings, and "why" explanations
+- Clicks "Get these plugins" to purchase via affiliate links
+
+**Why this experiment:**
+- **Zero infrastructure**: Static HTML/CSS/JS - can build in 2-4 days
+- **Education-first**: Builds trust and positions as expert
+- **Affiliate revenue**: Direct plugin sales commissions (20-30%)
+- **Fast validation**: Track demo plays, explanation reads, click-throughs
+
+**Technical approach:**
+- MVP: Static site with 5 pre-recorded tones, JSON data, simple JavaScript
+- Level 2: Add Web Audio API for interactive parameter tweaking
+- Level 3: Add AI to generate custom signal chains from text descriptions
+- Level 4: Full platform with user accounts, community, try-before-buy
+
+**Challenges:**
+- Audio quality in browser (WebAssembly needed for realism)
+- Plugin licensing and affiliate partnerships
+- Tone is subjective - need diverse testing
+
+**Success metrics:**
+- 60%+ play audio demos
+- 40%+ read educational explanations
+- 10%+ click through to purchase
+
+<Card title="Start Building" icon="guitar" href="/zoo/experiments/tone-explorer">
+  Complete 4-day implementation guide with code examples
+</Card>
+
+---
+
 ## Music vs Generic AI
 
 | Aspect | Generic AI | Music AI |
