@@ -28,7 +28,8 @@
               "zoo/experiments/mix-analyzer",
               "zoo/experiments/preset-generator",
               "zoo/experiments/session-setup",
-              "zoo/experiments/sound-finder"
+              "zoo/experiments/sound-finder",
+              "zoo/experiments/tone-explorer"
             ]
           },
           {
