@@ -1,0 +1,363 @@
+---
+title: "Automation Scripts"
+description: "35+ scripts for development, testing, log capture, and maintenance"
+icon: "gears"
+---
+
+AIAD includes a comprehensive suite of automation scripts that handle repetitive tasks, capture context for AI analysis, and enforce quality gates.
+
+## Script Categories
+
+<CardGroup cols={3}>
+  <Card title="Workspace" icon="folder">
+    Setup, sync, and maintenance
+  </Card>
+  <Card title="Development" icon="code">
+    Services, builds, and testing
+  </Card>
+  <Card title="Logs" icon="file-lines">
+    Capture and analysis
+  </Card>
+  <Card title="Worktrees" icon="code-branch">
+    Parallel development
+  </Card>
+  <Card title="Safety" icon="shield">
+    Compliance and security
+  </Card>
+  <Card title="Diagnostics" icon="stethoscope">
+    Health checks and audits
+  </Card>
+</CardGroup>
+
+## Workspace Management
+
+### bootstrap.sh
+
+Initial workspace setup that clones repositories, checks dependencies, and creates directory structure.
+
+```bash
+./scripts/bootstrap.sh
+```
+
+**Actions:**
+- Clones all repositories into `.repos/`
+- Creates `.workspace/` directory structure
+- Verifies required tools (Node, Docker, git)
+- Installs dependencies
+- Runs initial health check
+
+### dev.sh
+
+Starts all backend services for development.
+
+```bash
+./scripts/dev.sh
+# Or via Makefile:
+make dev
+```
+
+### status.sh
+
+Health check of all services, Docker containers, and git status.
+
+```bash
+./scripts/status.sh
+# Output:
+# ✓ Backend API: healthy (http://localhost:3000)
+# ✓ Database: connected
+# ✓ Docker: 3 containers running
+# ✓ Git: clean working directory
+```
+
+### sync.sh
+
+Pull all repositories and reset development database.
+
+```bash
+./scripts/sync.sh
+```
+
+### clean.sh
+
+Interactive cleanup of `.workspace/` artifacts.
+
+```bash
+./scripts/clean.sh
+# Options:
+# - Clean logs only
+# - Clean exports only
+# - Clean all ephemeral files
+```
+
+## Log Capture System
+
+### capture-logs.sh
+
+Comprehensive log capture with filtering and redaction capabilities.
+
+```bash
+# Capture server logs
+./scripts/capture-logs.sh server
+
+# Capture with noise filtering
+./scripts/capture-logs.sh server --clean
+
+# Capture with PII redaction
+./scripts/capture-logs.sh server --redact
+
+# Capture specific service
+./scripts/capture-logs.sh server --service api-gateway
+
+# Follow logs (like tail -f)
+./scripts/capture-logs.sh server --follow
+
+# Errors only
+./scripts/capture-logs.sh server --errors-only
+```
+
+**Log types:**
+| Type | Source | Output Location |
+|------|--------|-----------------|
+| `server` | Docker containers | `.workspace/logs/server/latest.log` |
+| `console` | Browser (from clipboard) | `.workspace/logs/console/latest.log` |
+| `build` | Build output | `.workspace/logs/build/latest.log` |
+| `ios` | iOS simulator | `.workspace/logs/ios/latest.log` |
+| `combined` | All sources | `.workspace/logs/combined/latest.log` |
+
+**Filtering options:**
+- `--clean` removes health checks, 200 OK responses, and noise
+- `--redact` removes emails, phone numbers, and identifiers
+- `--errors-only` shows only error-level messages
+
+### smart-run.sh
+
+Self-correcting test runner that implements Anthropic's "Effective Harnesses for Long-Running Agents" pattern.
+
+```bash
+./scripts/smart-run.sh "npm test"
+./scripts/smart-run.sh "make build" --auto-analyze
+./scripts/smart-run.sh "npm test" --search  # Search docs for errors
+```
+
+**How it works:**
+1. Run command with full output capture
+2. On failure: filter logs, extract error signature
+3. Search documentation for past occurrences (error memory)
+4. Prepare AI-ready context for analysis
+5. Output to `.workspace/logs/last-run-filtered.log`
+
+**Options:**
+| Flag | Purpose |
+|------|---------|
+| `--auto-analyze` | Automatically analyze failures |
+| `--clean` | Filter noise from output |
+| `--search` | Search docs for similar errors |
+| `--risk-check` | Run compliance scan first |
+
+<Tip>
+The error memory feature searches documentation for past occurrences of errors. This prevents re-solving problems you've already fixed.
+</Tip>
+
+## Worktree Management
+
+A complete suite for parallel development using git worktrees.
+
+### Quick Start
+
+```bash
+# Create worktree and open in editor
+./scripts/claude-start.sh backend feat/my-feature cursor
+```
+
+### Full Command Set
+
+```bash
+# Create worktree for a branch
+./scripts/worktree-create.sh backend feat/auth
+
+# Create worktrees across all repos (same branch)
+./scripts/worktree-create-all.sh feat/auth
+
+# List all active worktrees
+./scripts/worktree-list.sh
+
+# Status dashboard with metrics
+./scripts/worktree-status.sh
+
+# Remove worktree (auto-archives for recovery)
+./scripts/worktree-remove.sh backend feat/auth
+
+# Restore previously removed worktree
+./scripts/worktree-restore.sh backend feat/auth
+
+# Clean up merged/orphaned worktrees
+./scripts/worktree-cleanup.sh
+
+# Interactive setup wizard
+./scripts/worktree-wizard.sh
+
+# Comprehensive help
+./scripts/worktree-help.sh
+```
+
+### Shell Aliases
+
+Source `.worktree-aliases.sh` for speed:
+
+```bash
+source ./scripts/.worktree-aliases.sh
+
+# Quick commands
+wtquick p feat/x        # Create worktree (p=backend)
+wts                     # Status dashboard
+wtlist                  # List all
+wtcd                    # Fuzzy find and cd
+wtopen p feat/x cursor  # Open in editor
+wtinfo p feat/x         # Show info
+```
+
+## Safety & Compliance
+
+### scan-risks.sh
+
+Scans for FERPA/compliance issues in code and AI prompts.
+
+```bash
+./scripts/scan-risks.sh
+./scripts/scan-risks.sh --fix      # Show remediation suggestions
+./scripts/scan-risks.sh --strict   # CI mode (exit code on issues)
+```
+
+**Detects:**
+- PII in AI prompts (email, phone, SSN patterns)
+- JWT/token exposure in string templates
+- Database fields in prompt construction
+- Hardcoded API keys
+- Sensitive data in log statements
+
+### install-hooks.sh
+
+Install git pre-commit and pre-push hooks.
+
+```bash
+./scripts/install-hooks.sh
+```
+
+**Hooks installed:**
+- **Pre-commit:** Quick PII scan on staged files
+- **Pre-push:** Full risk scan before pushing
+
+## Diagnostics
+
+### doctor.sh
+
+Comprehensive workspace health audit.
+
+```bash
+./scripts/doctor.sh
+```
+
+**Checks:**
+- Dependencies (Node, npm, git, Docker)
+- CLI tools (jq, gh, etc.)
+- Workspace structure
+- Repository clones
+- Script permissions
+- Service connectivity
+
+**Example output:**
+```
+🔍 Running workspace health check...
+
+Dependencies:
+  ✓ Node.js v20.10.0
+  ✓ npm 10.2.3
+  ✓ git 2.42.0
+  ✓ Docker 24.0.6
+
+Workspace:
+  ✓ .workspace/ exists
+  ✓ .repos/backend cloned
+  ✓ .repos/api-gateway cloned
+  ✓ Scripts are executable
+
+Services:
+  ✓ Backend API responding
+  ✓ Database connected
+
+Issues found: 0
+```
+
+### repo.sh
+
+Run git commands across all repositories.
+
+```bash
+./scripts/repo.sh status      # Git status for all repos
+./scripts/repo.sh pull        # Pull all repos
+./scripts/repo.sh checkout main  # Checkout main in all
+./scripts/repo.sh log -1      # Last commit in all
+```
+
+## Makefile Interface
+
+All scripts are accessible via `make`:
+
+```bash
+# Workspace
+make bootstrap          # Initial setup
+make dev               # Start services
+make stop              # Stop services
+make status            # Health check
+make sync              # Pull + reset DB
+make clean             # Cleanup
+
+# Logs
+make logs              # View logs
+make logs s=backend    # Specific service
+
+# Worktrees
+make worktree-help     # Show help
+make worktree-wizard   # Interactive setup
+make worktree-list     # List all
+make worktree-status   # Dashboard
+make worktree-create REPO=backend BRANCH=feat/x
+make worktree-remove REPO=backend BRANCH=feat/x
+
+# Diagnostics
+make doctor            # Health audit
+```
+
+Run `make help` for the complete list.
+
+## Script Development Guidelines
+
+When adding new scripts:
+
+<Steps>
+  <Step title="Follow naming conventions">
+    Use kebab-case: `my-script.sh`
+  </Step>
+  <Step title="Add to Makefile">
+    Create a target that calls the script
+  </Step>
+  <Step title="Include help text">
+    Add usage instructions that `--help` displays
+  </Step>
+  <Step title="Handle errors gracefully">
+    Use proper exit codes and error messages
+  </Step>
+  <Step title="Document in CLAUDE.md">
+    Add the script to the relevant section
+  </Step>
+</Steps>
+
+## Integration with Claude Code
+
+Scripts are designed to produce output that's optimized for Claude Code analysis:
+
+1. **Structured output** — Logs use consistent formatting
+2. **Context capture** — Errors include surrounding context
+3. **Noise filtering** — Remove irrelevant information
+4. **Error signatures** — Extract patterns for searching
+5. **AI-ready format** — Output is concise and actionable

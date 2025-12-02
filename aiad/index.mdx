@@ -1,0 +1,82 @@
+---
+title: "AI-Assisted Development (AIAD)"
+description: "A comprehensive framework for maximizing AI productivity in software development"
+icon: "robot"
+---
+
+AI-Assisted Development (AIAD) is a structured approach to integrating AI tools—particularly Claude Code—into your development workflow. This framework was developed at DormWay and adapted for Universal Audio's Zoo platform.
+
+## What is AIAD?
+
+AIAD is not just about using AI tools—it's a **complete development philosophy** designed to:
+
+- **Preserve context** across development sessions
+- **Automate repetitive tasks** with intelligent scripts
+- **Maintain compliance** with security and privacy requirements
+- **Enable parallel development** without context loss
+- **Create institutional memory** through structured documentation
+
+<CardGroup cols={2}>
+  <Card title="Workspace Architecture" icon="layer-group" href="/aiad/architecture">
+    Three-layer structure separating templates, repositories, and working files
+  </Card>
+  <Card title="Claude Code Integration" icon="terminal" href="/aiad/claude-integration">
+    Custom slash commands, hooks, and session management
+  </Card>
+  <Card title="Automation Scripts" icon="gears" href="/aiad/automation">
+    35+ scripts for development, testing, and maintenance
+  </Card>
+  <Card title="Implementation Guide" icon="rocket" href="/aiad/implementation">
+    Step-by-step guide to implementing AIAD in your project
+  </Card>
+</CardGroup>
+
+## Core Benefits
+
+### 1. Context Preservation
+
+The biggest challenge with AI-assisted development is context loss. When you switch tasks, Claude Code loses understanding of what you were working on. AIAD solves this through:
+
+- **Git worktrees** with isolated Claude Code contexts
+- **TASK.md templates** that prime Claude Code with rich context
+- **Session commands** (`/session-start`, `/session-end`) that maintain state
+
+### 2. Error Memory
+
+When debugging fails, AIAD automatically searches documentation for past occurrences of similar errors. This prevents re-solving the same problem repeatedly.
+
+### 3. Safety Interlocks
+
+Development sessions can't end if tests or builds are failing. This ensures quality gates are enforced automatically.
+
+### 4. Multi-Workspace Support
+
+Maintain independent development environments (beta, dev, prod) with the same automation template.
+
+## Key Components
+
+| Component | Purpose |
+|-----------|---------|
+| `.claude/commands/` | Custom slash commands for Claude Code |
+| `scripts/` | 35+ automation scripts |
+| `.workspace/` | Ephemeral working files (logs, features, exports) |
+| `CLAUDE.md` | Primary AI guidance document |
+| `Makefile` | Command interface for all operations |
+
+## Philosophy
+
+<Note>
+AIAD treats the **development environment as a product**. Just as you invest in building great software, you should invest in building a great development experience.
+</Note>
+
+The framework is built on these principles:
+
+1. **Separation of concerns** — Templates, repositories, and working files are kept distinct
+2. **Automation over documentation** — Repetitive tasks become scripts, not wikis
+3. **Context is king** — Every tool and process is designed to preserve and share context
+4. **Safety by default** — Compliance checks and quality gates are built into the workflow
+5. **Discoverability** — Commands are organized with `make help` and clear documentation
+
+## Getting Started
+
+Ready to implement AIAD? Start with the [Implementation Guide](/aiad/implementation) or explore the individual components in the navigation.

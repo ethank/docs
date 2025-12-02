@@ -1,0 +1,551 @@
+---
+title: "Implementation Guide"
+description: "Step-by-step guide to implementing AIAD in your project"
+icon: "rocket"
+---
+
+This guide walks through implementing AIAD (AI-Assisted Development) for a Universal Audio project. The implementation is modular—you can adopt components incrementally.
+
+## Implementation Phases
+
+<Steps>
+  <Step title="Foundation">
+    Directory structure, CLAUDE.md, basic scripts
+  </Step>
+  <Step title="Claude Integration">
+    Slash commands, permissions, session management
+  </Step>
+  <Step title="Automation">
+    Log capture, testing harness, health checks
+  </Step>
+  <Step title="Advanced">
+    Worktrees, compliance scanning, documentation integration
+  </Step>
+</Steps>
+
+## Phase 1: Foundation
+
+### Create Directory Structure
+
+```bash
+# Create workspace directories
+mkdir -p .claude/commands
+mkdir -p .workspace/{logs,features,exports}
+mkdir -p scripts
+mkdir -p .templates
+
+# Add .workspace to gitignore
+echo ".workspace/" >> .gitignore
+```
+
+### Create CLAUDE.md
+
+Create the primary AI guidance document at your project root:
+
+```markdown
+# Universal Audio Zoo - CLAUDE.md
+
+## Project Overview
+[Brief description of what this project does]
+
+## Architecture
+[Key architectural decisions and patterns]
+
+## Development Workflow
+
+### Starting work
+1. Run `make dev` to start services
+2. Use `/session-start` for context
+3. Check `/load-context [topic]` for patterns
+
+### During development
+- Capture logs on errors: `./scripts/capture-logs.sh server`
+- Use `/analyze-logs` for debugging assistance
+- Run tests frequently: `npm test`
+
+### Ending work
+- Use `/session-end` to verify and save state
+- Commit work with descriptive messages
+
+## Service Architecture
+[How services communicate, database connections, etc.]
+
+## Common Tasks
+
+### Adding a new API endpoint
+1. Create route in `src/routes/`
+2. Add handler in `src/handlers/`
+3. Update OpenAPI spec
+4. Add tests
+
+### Debugging a failing test
+1. Run `./scripts/smart-run.sh "npm test"`
+2. Check `.workspace/logs/last-run-filtered.log`
+3. Use `/analyze-logs` for context
+
+## Troubleshooting
+[Common errors and their solutions]
+```
+
+### Create Basic Makefile
+
+```makefile
+.PHONY: help dev status clean
+
+help:
+	@echo "Available commands:"
+	@echo "  make dev     - Start development services"
+	@echo "  make status  - Check service health"
+	@echo "  make clean   - Clean workspace files"
+	@echo "  make logs    - View recent logs"
+
+dev:
+	./scripts/dev.sh
+
+status:
+	./scripts/status.sh
+
+clean:
+	./scripts/clean.sh
+
+logs:
+	@if [ -f .workspace/logs/server/latest.log ]; then \
+		tail -100 .workspace/logs/server/latest.log; \
+	else \
+		echo "No logs captured yet"; \
+	fi
+```
+
+### Create Bootstrap Script
+
+```bash
+#!/bin/bash
+# scripts/bootstrap.sh
+
+set -e
+
+echo "🚀 Bootstrapping AIAD workspace..."
+
+# Check dependencies
+command -v node >/dev/null 2>&1 || { echo "Node.js required"; exit 1; }
+command -v npm >/dev/null 2>&1 || { echo "npm required"; exit 1; }
+command -v git >/dev/null 2>&1 || { echo "git required"; exit 1; }
+
+# Create directories
+mkdir -p .workspace/{logs,features,exports}
+mkdir -p .workspace/logs/{server,build,console}
+
+# Make scripts executable
+chmod +x scripts/*.sh
+
+# Install dependencies
+npm install
+
+echo "✅ Bootstrap complete!"
+echo "Run 'make dev' to start development"
+```
+
+## Phase 2: Claude Integration
+
+### Create Session Commands
+
+**`.claude/commands/session-start.md`:**
+```markdown
+# Session Start
+
+Read the current project state and provide a briefing.
+
+## Steps
+1. Check `.workspace/claude-progress.txt` for last session notes
+2. Run `git status` to see current changes
+3. Check `.workspace/features/` for active feature files
+4. List any uncommitted work
+
+## Output Format
+Provide a brief session briefing:
+- Last session summary (if available)
+- Current git status
+- Active features in progress
+- Suggested next steps
+
+Do not start coding—just provide the briefing.
+```
+
+**`.claude/commands/session-end.md`:**
+```markdown
+# Session End
+
+Wrap up the current development session.
+
+## Steps
+1. Run tests to verify current state: `npm test`
+2. If tests fail, report the failures and do NOT proceed
+3. If tests pass:
+   - Summarize what was accomplished
+   - Note any blockers or issues
+   - Update `.workspace/claude-progress.txt` with summary
+   - Update active feature JSON if applicable
+
+## Output Format
+Session summary:
+- Completed: [list of completed items]
+- In progress: [items still in progress]
+- Blockers: [any blockers encountered]
+- Next session: [suggested next steps]
+
+## Safety Check
+If verification fails, do NOT complete session end. Report the failures and ask user how to proceed.
+```
+
+**`.claude/commands/load-context.md`:**
+```markdown
+# Load Context
+
+Load architectural context for a specific topic.
+
+## Usage
+/load-context [topic]
+
+## Topics
+- auth: Authentication and authorization patterns
+- api: API design and conventions
+- database: Database schemas and queries
+- testing: Test patterns and conventions
+- [add your project-specific topics]
+
+## Steps
+1. Identify the requested topic
+2. Search for relevant documentation and patterns
+3. Extract key constraints and conventions
+4. Present a summary of patterns to follow
+
+## Output Format
+Present the context as:
+- Overview of the subsystem
+- Key patterns to follow
+- Files to reference
+- Common pitfalls to avoid
+```
+
+### Create Settings File
+
+**`.claude/settings.local.json`:**
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(make:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run:*)",
+      "Bash(git status)",
+      "Bash(git diff)",
+      "Bash(git log:*)",
+      "Bash(./scripts/*.sh:*)"
+    ]
+  }
+}
+```
+
+## Phase 3: Automation
+
+### Log Capture Script
+
+**`scripts/capture-logs.sh`:**
+```bash
+#!/bin/bash
+# scripts/capture-logs.sh
+
+LOG_TYPE="${1:-server}"
+CLEAN_MODE=false
+ERRORS_ONLY=false
+
+# Parse flags
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --clean) CLEAN_MODE=true; shift ;;
+        --errors-only) ERRORS_ONLY=true; shift ;;
+        *) shift ;;
+    esac
+done
+
+OUTPUT_DIR=".workspace/logs/${LOG_TYPE}"
+mkdir -p "$OUTPUT_DIR"
+OUTPUT_FILE="${OUTPUT_DIR}/latest.log"
+
+case $LOG_TYPE in
+    server)
+        # Capture Docker logs
+        if command -v docker &> /dev/null; then
+            docker compose logs --tail=500 > "$OUTPUT_FILE" 2>&1
+        else
+            echo "Docker not available" > "$OUTPUT_FILE"
+        fi
+        ;;
+    build)
+        # Capture from last build (if stored)
+        if [ -f ".workspace/logs/last-build.log" ]; then
+            cp ".workspace/logs/last-build.log" "$OUTPUT_FILE"
+        else
+            echo "No build logs captured" > "$OUTPUT_FILE"
+        fi
+        ;;
+    *)
+        echo "Unknown log type: $LOG_TYPE"
+        exit 1
+        ;;
+esac
+
+# Apply filters
+if [ "$CLEAN_MODE" = true ]; then
+    # Remove noise lines
+    grep -v "health check" "$OUTPUT_FILE" | \
+    grep -v "GET / 200" | \
+    grep -v "OPTIONS" > "${OUTPUT_FILE}.clean"
+    mv "${OUTPUT_FILE}.clean" "$OUTPUT_FILE"
+fi
+
+if [ "$ERRORS_ONLY" = true ]; then
+    grep -i "error\|fail\|exception" "$OUTPUT_FILE" > "${OUTPUT_FILE}.errors"
+    mv "${OUTPUT_FILE}.errors" "$OUTPUT_FILE"
+fi
+
+echo "📋 Logs captured to $OUTPUT_FILE"
+echo "   Lines: $(wc -l < "$OUTPUT_FILE")"
+```
+
+### Smart Test Runner
+
+**`scripts/smart-run.sh`:**
+```bash
+#!/bin/bash
+# scripts/smart-run.sh - Self-correcting test runner
+
+COMMAND="$1"
+OUTPUT_FILE=".workspace/logs/last-run.log"
+FILTERED_FILE=".workspace/logs/last-run-filtered.log"
+
+mkdir -p .workspace/logs
+
+echo "🏃 Running: $COMMAND"
+echo "---"
+
+# Run command and capture output
+if eval "$COMMAND" 2>&1 | tee "$OUTPUT_FILE"; then
+    echo "---"
+    echo "✅ Command succeeded"
+    exit 0
+fi
+
+echo "---"
+echo "❌ Command failed - preparing context for analysis"
+
+# Extract relevant error information
+grep -A 5 -B 2 "error\|Error\|ERROR\|fail\|Fail\|FAIL" "$OUTPUT_FILE" > "$FILTERED_FILE"
+
+# Add file context
+echo "" >> "$FILTERED_FILE"
+echo "=== Test Failures ===" >> "$FILTERED_FILE"
+grep -A 10 "FAIL\|✗\|×" "$OUTPUT_FILE" >> "$FILTERED_FILE" 2>/dev/null
+
+echo "📋 Filtered output saved to $FILTERED_FILE"
+echo "   Use /analyze-logs to get debugging assistance"
+
+exit 1
+```
+
+### Status Check Script
+
+**`scripts/status.sh`:**
+```bash
+#!/bin/bash
+# scripts/status.sh - Health check all services
+
+echo "🔍 Checking workspace health..."
+echo ""
+
+# Check services (customize for your stack)
+check_service() {
+    local name=$1
+    local url=$2
+
+    if curl -s -o /dev/null -w "%{http_code}" "$url" | grep -q "200"; then
+        echo "  ✓ $name: healthy"
+        return 0
+    else
+        echo "  ✗ $name: not responding"
+        return 1
+    fi
+}
+
+echo "Services:"
+check_service "API" "http://localhost:3000/health" || true
+
+echo ""
+echo "Git:"
+echo "  Branch: $(git branch --show-current)"
+if [ -n "$(git status --porcelain)" ]; then
+    echo "  Status: uncommitted changes"
+else
+    echo "  Status: clean"
+fi
+
+echo ""
+echo "Workspace:"
+if [ -d ".workspace" ]; then
+    echo "  ✓ .workspace/ exists"
+else
+    echo "  ✗ .workspace/ missing - run make bootstrap"
+fi
+```
+
+## Phase 4: Advanced Features
+
+### Feature Tracking
+
+**`.claude/commands/new-feature.md`:**
+```markdown
+# New Feature
+
+Create a feature checklist for multi-session work.
+
+## Usage
+/new-feature [Feature Name]
+
+## Steps
+1. Create a JSON file in `.workspace/features/[feature-slug].json`
+2. Break the feature into 3-8 testable items
+3. Define verification commands for each item
+
+## JSON Structure
+```json
+{
+  "name": "Feature Name",
+  "created": "YYYY-MM-DD",
+  "status": "planning",
+  "features": [
+    {
+      "id": "feat-1",
+      "description": "What this accomplishes",
+      "passes": false,
+      "testCommand": "npm run test:specific"
+    }
+  ],
+  "sessionLog": []
+}
+```
+
+## Output
+Confirm the feature file was created and show the items.
+```
+
+### Worktree Quick Start
+
+Add to Makefile:
+```makefile
+worktree-create:
+	@if [ -z "$(BRANCH)" ]; then echo "Usage: make worktree-create BRANCH=feat/x"; exit 1; fi
+	git worktree add ../zoo-worktrees/$(BRANCH) -b $(BRANCH)
+	cp .templates/TASK.md.template ../zoo-worktrees/$(BRANCH)/TASK.md
+	@echo "✅ Worktree created at ../zoo-worktrees/$(BRANCH)"
+
+worktree-list:
+	git worktree list
+
+worktree-remove:
+	@if [ -z "$(BRANCH)" ]; then echo "Usage: make worktree-remove BRANCH=feat/x"; exit 1; fi
+	git worktree remove ../zoo-worktrees/$(BRANCH)
+```
+
+**`.templates/TASK.md.template`:**
+```markdown
+# Task: [Feature Name]
+
+## Context
+- Branch: [branch name]
+- Base: main
+- Created: [date]
+
+## Objective
+[What you're trying to accomplish]
+
+## Success Criteria
+- [ ] Criterion 1
+- [ ] Criterion 2
+- [ ] Tests pass
+- [ ] Documentation updated
+
+## Files to Modify
+- `path/to/file.ts`
+
+## Architecture Context
+[Relevant patterns from /load-context]
+
+## Development Log
+| Date | Progress | Next Steps |
+|------|----------|------------|
+| | | |
+```
+
+## Adoption Checklist
+
+Use this checklist to track your AIAD implementation:
+
+<Tabs>
+  <Tab title="Foundation">
+    - [ ] Directory structure created
+    - [ ] `.workspace/` added to gitignore
+    - [ ] CLAUDE.md created with project context
+    - [ ] Basic Makefile with help, dev, status
+    - [ ] bootstrap.sh script
+  </Tab>
+  <Tab title="Claude Integration">
+    - [ ] `/session-start` command
+    - [ ] `/session-end` command
+    - [ ] `/load-context` command
+    - [ ] settings.local.json with permissions
+    - [ ] At least 3 context topics documented
+  </Tab>
+  <Tab title="Automation">
+    - [ ] capture-logs.sh script
+    - [ ] smart-run.sh script
+    - [ ] status.sh script
+    - [ ] Makefile targets for common operations
+    - [ ] Scripts are executable
+  </Tab>
+  <Tab title="Advanced">
+    - [ ] Feature tracking system
+    - [ ] Worktree support
+    - [ ] Git hooks for compliance
+    - [ ] Doctor script for diagnostics
+    - [ ] Documentation search integration
+  </Tab>
+</Tabs>
+
+## Customization for Zoo
+
+When implementing AIAD for Universal Audio Zoo specifically:
+
+1. **Audio-specific context topics:**
+   - `presets` — Preset file formats and generation
+   - `dsp` — DSP parameter conventions
+   - `plugins` — Plugin architecture patterns
+
+2. **Zoo-specific verification:**
+   - Preset validation commands
+   - Audio processing test suites
+   - API contract tests
+
+3. **Integration points:**
+   - Connect to Zoo experiment tracking
+   - Link with deployment roadmap
+   - Reference architecture documentation
+
+## Next Steps
+
+After implementing AIAD:
+
+1. **Train the team** on slash commands and workflows
+2. **Document project-specific patterns** in CLAUDE.md
+3. **Create context topics** for your architecture
+4. **Set up feature templates** for common work types
+5. **Iterate based on usage** — add scripts as patterns emerge

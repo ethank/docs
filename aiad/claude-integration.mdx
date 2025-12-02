@@ -1,0 +1,340 @@
+---
+title: "Claude Code Integration"
+description: "Custom slash commands, hooks, and session management for Claude Code"
+icon: "terminal"
+---
+
+AIAD provides deep integration with Claude Code through custom slash commands, permission hooks, and session management. This transforms Claude Code from a general-purpose assistant into a context-aware development partner.
+
+## Custom Slash Commands
+
+Slash commands are defined in `.claude/commands/` and extend Claude Code with project-specific capabilities.
+
+### Session Management
+
+<Tabs>
+  <Tab title="/session-start">
+    **Purpose:** Orient Claude Code at the beginning of a development session.
+
+    **What it does:**
+    - Reads quick context from `.workspace/claude-progress.txt`
+    - Checks git status and recent commits
+    - Detects active feature checklists
+    - Checks service health (if backend work)
+    - Outputs a briefing without starting coding
+
+    **Usage:**
+    ```
+    /session-start
+    ```
+
+    **Example output:**
+    ```
+    📋 Session Briefing
+
+    Last Session: 2024-01-14
+    - Completed OAuth token refresh
+    - Tests passing: 47/47
+
+    Active Features:
+    - auth-oauth.json (in_progress, 3/5 items done)
+
+    Git Status:
+    - Branch: feat/auth-oauth
+    - 2 uncommitted changes
+
+    Ready to continue where we left off.
+    ```
+  </Tab>
+  <Tab title="/session-end">
+    **Purpose:** Wrap up development sessions with verification.
+
+    **What it does:**
+    - Runs feature verification commands (tests, builds)
+    - Blocks session end if verification fails
+    - Updates feature JSON with session progress
+    - Appends summary to documentation
+
+    **Safety interlock:** Won't complete if tests are failing. Use `--skip-verification` to override (not recommended).
+
+    **Usage:**
+    ```
+    /session-end
+    /session-end --skip-verification
+    ```
+  </Tab>
+</Tabs>
+
+### Context Loading
+
+<Tabs>
+  <Tab title="/load-context">
+    **Purpose:** Load architectural patterns before coding.
+
+    **Topics available:**
+    - `auth` — Authentication patterns
+    - `api` — API design conventions
+    - `database` — Database schemas and queries
+    - `realtime` — WebSocket/SSE patterns
+    - `testing` — Test conventions
+
+    **Usage:**
+    ```
+    /load-context auth
+    /load-context api
+    ```
+
+    **Why this matters:** Prevents Claude Code from guessing implementation details that are already documented. Ensures consistency with established patterns.
+  </Tab>
+  <Tab title="/search-docs">
+    **Purpose:** Search documentation vault for specific information.
+
+    **Usage:**
+    ```
+    /search-docs OAuth implementation
+    /search-docs rate limiting
+    ```
+
+    **Output:** Returns matching documentation with file paths and relevant excerpts.
+  </Tab>
+</Tabs>
+
+### Analysis & Planning
+
+<Tabs>
+  <Tab title="/analyze-logs">
+    **Purpose:** Analyze captured logs with error context.
+
+    **What it does:**
+    - Reads recent logs from `.workspace/logs/`
+    - Searches documentation for past error occurrences
+    - Outputs structured analysis with severity levels
+    - Can auto-append to daily worklog
+
+    **Severity mapping:**
+    - `FAILURE` — Build/test failures
+    - `ERROR` — Runtime errors
+    - `WARNING` — Potential issues
+    - `SUCCESS` — Confirmed working
+    - `INFO` — General information
+
+    **Usage:**
+    ```
+    /analyze-logs
+    /analyze-logs server
+    /analyze-logs --append-to-worklog
+    ```
+  </Tab>
+  <Tab title="/new-feature">
+    **Purpose:** Create feature checklists for multi-session work.
+
+    **What it does:**
+    - Creates JSON feature file in `.workspace/features/`
+    - Breaks feature into 3-8 testable items
+    - Tracks status: planning → in_progress → testing → complete
+    - Maintains session log for continuity
+
+    **Usage:**
+    ```
+    /new-feature OAuth Integration
+    ```
+
+    **Generated file structure:**
+    ```json
+    {
+      "name": "OAuth Integration",
+      "status": "planning",
+      "features": [
+        {
+          "id": "feat-1",
+          "description": "OAuth provider configuration",
+          "passes": false,
+          "testCommand": "npm run test:auth"
+        }
+      ],
+      "sessionLog": []
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Permission Configuration
+
+Claude Code permissions are defined in `.claude/settings.local.json`:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(capture-logs:*)",
+      "Bash(make status)",
+      "Bash(make dev)",
+      "Bash(npm test:*)",
+      "Bash(git:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)"
+    ]
+  },
+  "hooks": {
+    "post-tool": [
+      {
+        "pattern": "Bash(npm test|make build)",
+        "action": "notify-log-capture"
+      }
+    ]
+  }
+}
+```
+
+### Permission Categories
+
+| Category | Examples | Purpose |
+|----------|----------|---------|
+| Development | `make dev`, `npm start` | Run services |
+| Testing | `npm test:*`, `make test` | Execute tests |
+| Git | `git:*` | Version control |
+| Logs | `capture-logs:*` | Capture output |
+| Dangerous | `rm -rf`, `sudo` | Blocked by default |
+
+## CLAUDE.md Structure
+
+The primary AI guidance document (`CLAUDE.md`) should include:
+
+```markdown
+# Project Name
+
+## Workspace Architecture
+- Three-layer structure explanation
+- Key directories and their purposes
+
+## Slash Commands
+- Available commands and when to use them
+
+## Development Workflow
+1. Start with /session-start
+2. Use /load-context for relevant patterns
+3. Implement with context preservation
+4. Capture logs on errors
+5. End with /session-end
+
+## Service Architecture
+- How services communicate
+- Database connections
+- External APIs
+
+## Common Workflows
+### Starting development
+\`\`\`bash
+make dev        # Start all services
+make status     # Verify health
+\`\`\`
+
+### Debugging failures
+\`\`\`bash
+./scripts/capture-logs.sh server
+/analyze-logs
+\`\`\`
+
+## Troubleshooting
+- Common errors and solutions
+- Links to deeper documentation
+```
+
+## Feature Tracking System
+
+Features are tracked as JSON files in `.workspace/features/`:
+
+```json
+{
+  "name": "OAuth Integration",
+  "created": "2024-01-15",
+  "lastUpdated": "2024-01-16",
+  "status": "in_progress",
+  "blockers": [],
+  "features": [
+    {
+      "id": "feat-1",
+      "category": "api",
+      "description": "Configure OAuth providers",
+      "passes": true,
+      "steps": [
+        "Add provider config to env",
+        "Create OAuth route handlers"
+      ],
+      "testCommand": "npm run test:oauth",
+      "notes": "Using Google and GitHub providers"
+    },
+    {
+      "id": "feat-2",
+      "category": "database",
+      "description": "Store OAuth tokens",
+      "passes": false,
+      "steps": [
+        "Create tokens table migration",
+        "Add token refresh logic"
+      ],
+      "testCommand": "npm run test:db"
+    }
+  ],
+  "verification": {
+    "command": "npm test",
+    "required": true,
+    "lastRun": "2024-01-16 14:30",
+    "lastResult": "pass"
+  },
+  "sessionLog": [
+    {
+      "date": "2024-01-15",
+      "session": 1,
+      "completed": ["feat-1"],
+      "blockers": [],
+      "nextSteps": ["Start feat-2"]
+    }
+  ]
+}
+```
+
+<Note>
+**Why JSON over Markdown?** Models are less likely to accidentally corrupt JSON structure when updating features. The structured format also enables programmatic verification.
+</Note>
+
+## Session Workflow Example
+
+```mermaid
+flowchart TD
+    A[Start Session] --> B[/session-start]
+    B --> C{Review Briefing}
+    C --> D[/load-context topic]
+    D --> E[Development Work]
+    E --> F{Error?}
+    F -->|Yes| G[capture-logs]
+    G --> H[/analyze-logs]
+    H --> E
+    F -->|No| I[Continue Work]
+    I --> J{Done for day?}
+    J -->|No| E
+    J -->|Yes| K[/session-end]
+    K --> L{Verification Pass?}
+    L -->|Yes| M[Session Complete]
+    L -->|No| N[Fix Issues]
+    N --> E
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Use /session-start first" icon="play">
+    Always begin with `/session-start` to get context. This prevents Claude Code from making assumptions about project state.
+  </Card>
+  <Card title="Load context before coding" icon="book">
+    Use `/load-context` before implementing features. This ensures consistency with established patterns.
+  </Card>
+  <Card title="Capture logs on errors" icon="bug">
+    When something fails, run `capture-logs.sh` before asking Claude to debug. This provides full context.
+  </Card>
+  <Card title="Don't skip verification" icon="check">
+    Let `/session-end` run verification. If it fails, fix the issues before ending the session.
+  </Card>
+</CardGroup>

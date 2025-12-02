@@ -1,0 +1,222 @@
+---
+title: "Workspace Architecture"
+description: "Three-layer architecture for AI-assisted development workspaces"
+icon: "layer-group"
+---
+
+The AIAD workspace uses a **three-layer architecture** that separates concerns between infrastructure, code, and ephemeral working files.
+
+## Three-Layer Structure
+
+```
+workspace/
+├── Template Layer (git-tracked)
+│   ├── .claude/           # Claude Code configuration
+│   ├── scripts/           # Automation scripts
+│   ├── Makefile           # Command interface
+│   ├── CLAUDE.md          # AI guidance
+│   └── docs/              # Documentation
+│
+├── Repository Layer (.repos/)
+│   ├── backend/           # Independent git repo
+│   ├── api-gateway/       # Independent git repo
+│   └── mobile/            # Independent git repo
+│
+└── Working Layer (.workspace/)
+    ├── logs/              # Captured logs
+    ├── features/          # Feature checklists
+    ├── exports/           # Export files
+    └── claude-progress.txt # Session state
+```
+
+## Layer Responsibilities
+
+<AccordionGroup>
+  <Accordion title="Template Layer" icon="file-code">
+    The template layer contains all workspace infrastructure and is tracked in git. This includes:
+
+    - **Automation scripts** (`scripts/`)
+    - **Claude Code configuration** (`.claude/commands/`, `CLAUDE.md`)
+    - **Command interface** (`Makefile`)
+    - **Documentation** and templates
+
+    This layer is versioned and can be shared across multiple workspace instances.
+  </Accordion>
+
+  <Accordion title="Repository Layer" icon="code-branch">
+    The repository layer contains your actual code repositories. Each repository is:
+
+    - **Independently versioned** with its own git history
+    - **Cloned into `.repos/`** during bootstrap
+    - **Managed via `repo.sh`** for multi-repo operations
+
+    This separation allows the workspace template to evolve independently from your code.
+  </Accordion>
+
+  <Accordion title="Working Layer" icon="folder-open">
+    The working layer contains ephemeral files that shouldn't be committed:
+
+    - **Logs** captured during development
+    - **Feature checklists** tracking multi-session work
+    - **Exports** and analysis outputs
+    - **Session state** files
+
+    This layer is gitignored and can be safely deleted.
+  </Accordion>
+</AccordionGroup>
+
+## Benefits
+
+### Multi-Workspace Support
+
+The three-layer architecture enables multiple workspace instances with the same template:
+
+```
+~/workspaces/
+├── zoo-dev/           # Development workspace
+├── zoo-beta/          # Beta testing workspace
+└── zoo-prod/          # Production hotfix workspace
+```
+
+Each workspace shares the same automation scripts and Claude Code configuration while maintaining independent repository states.
+
+### Clean Separation
+
+| Layer | Git Status | Purpose |
+|-------|------------|---------|
+| Template | Tracked | Infrastructure, automation, docs |
+| Repository | Independent | Actual code (own git history) |
+| Working | Ignored | Logs, exports, ephemeral files |
+
+### Reproducible Environments
+
+New team members can bootstrap a complete development environment:
+
+```bash
+git clone workspace-template zoo-dev
+cd zoo-dev
+make bootstrap
+```
+
+The bootstrap process:
+1. Creates directory structure
+2. Clones all repositories into `.repos/`
+3. Installs dependencies
+4. Verifies tooling
+
+## Git Worktrees
+
+For parallel feature development, AIAD uses git worktrees to maintain isolated contexts.
+
+### The Problem
+
+When you context-switch between features, Claude Code loses its understanding. Re-explaining takes 10-15 minutes per switch.
+
+### The Solution
+
+Each worktree maintains independent Claude Code context:
+
+```
+../zoo-worktrees/
+├── backend-feat/auth-oauth/     # OAuth feature
+│   └── TASK.md                  # Rich context for Claude
+├── backend-fix/payment-bug/     # Payment fix
+│   └── TASK.md                  # Independent context
+└── api-feat/rate-limiting/      # API feature
+    └── TASK.md                  # Own context
+```
+
+### TASK.md Template
+
+Each worktree includes a `TASK.md` file that primes Claude Code:
+
+```markdown
+# Task: [Feature Name]
+
+## Context
+- Repository: backend
+- Branch: feat/auth-oauth
+- Base: main
+
+## Objective
+[What you're trying to accomplish]
+
+## Success Criteria
+- [ ] OAuth flow works end-to-end
+- [ ] Tests pass
+- [ ] Documentation updated
+
+## Files to Modify
+- `src/auth/oauth.ts`
+- `src/routes/auth.ts`
+
+## Architecture Context
+[Relevant patterns and constraints]
+
+## Development Log
+| Date | Progress | Next Steps |
+|------|----------|------------|
+| 2024-01-15 | Started implementation | Add token refresh |
+```
+
+### Worktree Commands
+
+```bash
+# Create worktree for a feature
+make worktree-create REPO=backend BRANCH=feat/auth
+
+# List all worktrees
+make worktree-list
+
+# Status dashboard
+make worktree-status
+
+# Remove worktree (auto-archives)
+make worktree-remove REPO=backend BRANCH=feat/auth
+```
+
+<Tip>
+Use descriptive branch names like `feat/auth-oauth2-integration` rather than `feature-1`. This makes worktree management much easier.
+</Tip>
+
+## Directory Structure Reference
+
+```
+workspace/
+├── .claude/
+│   ├── commands/              # Custom slash commands
+│   │   ├── session-start.md
+│   │   ├── session-end.md
+│   │   ├── load-context.md
+│   │   ├── analyze-logs.md
+│   │   ├── new-feature.md
+│   │   └── search-docs.md
+│   └── settings.local.json    # Permissions and hooks
+│
+├── .repos/
+│   ├── backend/               # Main application
+│   ├── api-gateway/           # API layer
+│   └── mobile/                # Mobile app
+│
+├── .workspace/
+│   ├── logs/
+│   │   ├── server/latest.log
+│   │   ├── build/latest.log
+│   │   └── combined/latest.log
+│   ├── features/
+│   │   └── auth-oauth.json
+│   └── claude-progress.txt
+│
+├── scripts/
+│   ├── bootstrap.sh           # Initial setup
+│   ├── dev.sh                 # Start services
+│   ├── status.sh              # Health checks
+│   ├── capture-logs.sh        # Log capture
+│   ├── smart-run.sh           # Self-correcting runner
+│   └── ... (35+ scripts)
+│
+├── docs/                      # Documentation
+├── Makefile                   # Command interface
+├── CLAUDE.md                  # AI guidance
+└── README.md                  # Quick start
+```

@@ -77,6 +77,31 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "AIAD",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "aiad/index"
+            ]
+          },
+          {
+            "group": "Components",
+            "pages": [
+              "aiad/architecture",
+              "aiad/claude-integration",
+              "aiad/automation"
+            ]
+          },
+          {
+            "group": "Getting Started",
+            "pages": [
+              "aiad/implementation"
+            ]
+          }
+        ]
       }
     ],
     "global": {
