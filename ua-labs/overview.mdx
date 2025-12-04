@@ -8,32 +8,24 @@ UA Labs is Universal Audio's innovation engine. We ship consumer-facing music ap
 
 ## Organizational Structure
 
-<CardGroup cols={2}>
-  <Card title="Legacy Division" icon="building">
-    **Reports to:** VP Engineering
+```mermaid
+flowchart TB
+    CTO[CTO]
+    CTO --> Legacy[Legacy Division<br/>VP Engineering]
+    CTO --> Labs[UA Labs<br/>CTO Direct / Remote]
 
-    Traditional teams: DSP, Plugins, Hardware, QA/Compliance, DevOps/IT
-  </Card>
-  <Card title="UA Labs" icon="flask">
-    **Reports to:** CTO Direct
+    Legacy --> DSP[DSP Teams]
+    Legacy --> Plugins[Plugin Teams]
+    Legacy --> Hardware[Hardware Teams]
+    Legacy --> QA[QA/Compliance]
 
-    Remote-first innovation engine
-  </Card>
-</CardGroup>
+    Labs --> Vocal[Vocal Pod<br/>2 Builders + 1 Amplifier]
+    Labs --> Guitar[Guitar Pod<br/>2 Builders + 1 Amplifier]
+    Labs --> Platform[Platform Team<br/>3-4 engineers]
 
-**UA Labs Structure:**
-
-<CardGroup cols={3}>
-  <Card title="Vocal Pod" icon="microphone">
-    2 Builders + 1 Amplifier
-  </Card>
-  <Card title="Guitar Pod" icon="guitar">
-    2 Builders + 1 Amplifier
-  </Card>
-  <Card title="Platform Team" icon="server">
-    3-4 engineers (Zoo)
-  </Card>
-</CardGroup>
+    Vocal --> SpinoutV[Spinout Products]
+    Guitar --> SpinoutV
+```
 
 ## Core Philosophy
 
