@@ -24,17 +24,11 @@ This requires a fundamentally different organizational model.
 
 ## The Two-Division Structure
 
-```
-                         ┌─────────────┐
-                         │     CTO     │
-                         └──────┬──────┘
-                                │
-              ┌─────────────────┴─────────────────┐
-              │                                   │
-    ┌─────────┴─────────┐           ┌─────────────┴─────────────┐
-    │  LEGACY DIVISION  │           │          LABS             │
-    │   (Sustaining)    │           │      (Innovation)         │
-    └───────────────────┘           └───────────────────────────┘
+```mermaid
+flowchart TB
+    CTO[CTO]
+    CTO --> Legacy[Legacy Division<br/>Sustaining]
+    CTO --> Labs[Labs<br/>AIAD Product Development]
 ```
 
 ### Legacy Division
@@ -59,29 +53,17 @@ This requires a fundamentally different organizational model.
 
 Each product gets a single pod:
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                       PRODUCT POD                               │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
-│  │   BUILDER   │  │   BUILDER   │  │  AMPLIFIER  │              │
-│  │             │  │             │  │             │              │
-│  │ Full-stack  │  │ Full-stack  │  │ Community   │              │
-│  │ + AI native │  │ + AI native │  │ + Content   │              │
-│  │             │  │             │  │ + Testing   │              │
-│  └─────────────┘  └─────────────┘  └─────────────┘              │
-│        │                │                │                      │
-│        └────────────────┼────────────────┘                      │
-│                         │                                       │
-│                  ┌──────┴──────┐                                │
-│                  │  AI AGENTS  │                                │
-│                  │ Claude Code │                                │
-│                  │   Cursor    │                                │
-│                  │  v0/Vercel  │                                │
-│                  └─────────────┘                                │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Pod[Product Pod]
+        Builder1[Builder<br/>Full-stack + AI native]
+        Builder2[Builder<br/>Full-stack + AI native]
+        Amplifier[Amplifier<br/>Community + Content + Testing]
+
+        Builder1 --> AI[AI Agents<br/>Claude Code / Cursor / v0]
+        Builder2 --> AI
+        Amplifier --> AI
+    end
 ```
 
 ### Role Definitions
@@ -128,11 +110,13 @@ Each product gets a single pod:
 
 Maintains shared infrastructure that enables pods to ship fast:
 
-```
-Platform Team
-├── Platform Lead (1) - Architecture, standards, infrastructure
-├── Platform Builder (1-2) - Shared services, tooling, AI integrations
-└── DevOps/SRE (1) - Deployment, monitoring, cost management
+```mermaid
+flowchart TB
+    subgraph Platform[Platform Team]
+        Lead[Platform Lead<br/>Architecture, standards, infrastructure]
+        PB[Platform Builder 1-2<br/>Shared services, tooling, AI integrations]
+        DevOps[DevOps/SRE<br/>Deployment, monitoring, cost management]
+    end
 ```
 
 **What they provide:**
@@ -203,21 +187,15 @@ Labs reports directly to CTO, not through VP Engineering chain. This prevents:
 
 ### How Labs and Legacy Communicate
 
-```
-                    ┌──────────────────┐
-                    │    INTERFACE     │
-                    │    COMMITTEE     │
-                    │  (meets weekly)  │
-                    └────────┬─────────┘
-                             │
-        ┌────────────────────┼────────────────────┐
-        │                    │                    │
-        ▼                    ▼                    ▼
-┌───────────────┐   ┌───────────────┐   ┌───────────────┐
-│     LABS      │   │   API/SDK     │   │    LEGACY     │
-│   Experiment  │◄──┤   Contract    │──►│    Teams      │
-│     Pods      │   │               │   │               │
-└───────────────┘   └───────────────┘   └───────────────┘
+```mermaid
+flowchart TB
+    Committee[Interface Committee<br/>meets weekly]
+    Committee --> Labs[Labs<br/>Product Pods]
+    Committee --> Contract[API/SDK Contract]
+    Committee --> Legacy[Legacy Teams]
+
+    Labs <--> Contract
+    Contract <--> Legacy
 ```
 
 ### Interface Committee (Weekly, 30 min)
@@ -269,26 +247,22 @@ All must be true to "fill" (continue):
 
 When a product succeeds, it graduates:
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                          PRODUCT LIFECYCLE                              │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  LABS PHASE              SPINOUT PHASE              MATURE PHASE        │
-│  (8 weeks)               (variable)                 (ongoing)           │
-│                                                                         │
-│  ┌──────────┐           ┌──────────────┐           ┌──────────────┐    │
-│  │ Product  │  "Fill"   │   Product    │  Scale    │  Standalone  │    │
-│  │   Pod    │ ────────► │    Team      │ ────────► │   Business   │    │
-│  │  (3 ppl) │           │  (5-8 ppl)   │           │    Unit      │    │
-│  └──────────┘           └──────────────┘           └──────────────┘    │
-│                                                                         │
-│  Labs owns               Own P&L                    Reports to CEO/     │
-│  100%                    Still AIAD-native          product leadership  │
-│                          Hires around core                              │
-│                          Labs principles apply                          │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph Labs[Labs Phase - 8 weeks]
+        Pod[Product Pod<br/>3 people]
+    end
+
+    subgraph Spinout[Spinout Phase]
+        Team[Product Team<br/>5-8 people<br/>Own P&L, still AIAD-native]
+    end
+
+    subgraph Mature[Mature Phase]
+        BU[Standalone Business Unit<br/>Reports to CEO/product leadership]
+    end
+
+    Pod -->|Fill| Team
+    Team -->|Scale| BU
 ```
 
 **What this means:**
@@ -306,8 +280,9 @@ When a product succeeds, it graduates:
 
 Traditional software process exists because of **latency**—the gap between intent and artifact:
 
-```
-Traditional: Idea → Spec → Design Review → Build → Code Review → QA → Ship
+```mermaid
+flowchart LR
+    Idea --> Spec --> Review1[Design Review] --> Build --> Review2[Code Review] --> QA --> Ship
 ```
 
 Each gate exists because changing the artifact is expensive. You review designs before building because building is slow. You review code before merging because fixing is costly. Process is a hedge against the cost of iteration.
@@ -316,8 +291,9 @@ Each gate exists because changing the artifact is expensive. You review designs 
 
 When creation becomes real-time dialog with AI, these gates collapse:
 
-```
-AIAD: Intent ↔ Artifact (continuous)
+```mermaid
+flowchart LR
+    Intent <-->|continuous| Artifact
 ```
 
 **The review is the creation.** You don't spec → review → build. You converse with the artifact directly:
