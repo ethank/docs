@@ -60,6 +60,24 @@
         ]
       },
       {
+        "tab": "UA Labs",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "ua-labs/index"
+            ]
+          },
+          {
+            "group": "Hiring",
+            "pages": [
+              "ua-labs/job-descriptions",
+              "ua-labs/interview-rubrics"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "AI Tools",
         "groups": [
           {

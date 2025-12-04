@@ -1,0 +1,174 @@
+---
+title: 'UA Labs'
+description: 'Universal Audio's AIAD-powered innovation engine'
+---
+
+# UA Labs Organizational Design
+
+## The Core Question
+
+How do you staff and organize an innovation lab that:
+1. Can ship 8-week experiments at speed (per your strategic framework)
+2. Leans heavily on AI-Augmented Development (AIAD)
+3. Remains "black-boxed" from legacy processes that would slow it down
+4. Still maintains interface/support for legacy systems when needed
+
+---
+
+## Organizational Structure
+
+```
+                         ┌─────────────────┐
+                         │      CTO        │
+                         │ (Labs + Legacy) │
+                         └────────┬────────┘
+                                  │
+              ┌───────────────────┴───────────────────┐
+              │                                       │
+    ┌─────────┴─────────┐               ┌─────────────┴─────────────┐
+    │  LEGACY DIVISION  │               │        UA LABS            │
+    │   VP Engineering  │               │    (CTO Direct Report)    │
+    │                   │               │      [Remote-First]       │
+    └─────────┬─────────┘               └─────────────┬─────────────┘
+              │                                       │
+    Traditional Teams                   ┌─────────────┼─────────────┐
+    - DSP Engineering                   │             │             │
+    - Plugin Development         ┌──────┴────┐ ┌─────┴─────┐ ┌──────┴─────┐
+    - Hardware Engineering       │ Exp Pod A │ │ Exp Pod B │ │  Platform  │
+    - QA/Compliance              │  (Vocal)  │ │ (Guitar)  │ │   Team     │
+    - DevOps/IT                  │ 2B + 1A   │ │ 2B + 1A   │ │  3-4 ppl   │
+                                 │  REMOTE   │ │  REMOTE   │ │  REMOTE    │
+                                 └───────────┘ └───────────┘ └────────────┘
+```
+
+---
+
+## Core Philosophy
+
+**"Small teams, big AI, zero process"**
+
+The Labs division operates on fundamentally different principles than traditional engineering:
+
+| Dimension | Legacy Division | UA Labs |
+|-----------|-----------------|---------|
+| Team Size | 10-30 per team | 2-3 per pod |
+| Shipping Cadence | Quarterly releases | Weekly/daily |
+| Planning | Roadmaps, PRDs, reviews | 8-week experiments, fill or kill |
+| Code Reviews | Multi-stage approval | AI-assisted, trust-based |
+| Testing | Full QA cycles | Automated + user feedback |
+| Tools | Established stack | Whatever ships fastest |
+| AI Usage | Augmentation | Core methodology (AIAD) |
+
+---
+
+## The 3-Person Experiment Pod
+
+Each experiment (Vocal Suite, Guitar Playground) gets a single pod:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      EXPERIMENT POD                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
+│  │   BUILDER   │  │   BUILDER   │  │  AMPLIFIER  │              │
+│  │  (Primary)  │  │ (Secondary) │  │             │              │
+│  │             │  │             │  │             │              │
+│  │ Full-stack  │  │ Full-stack  │  │ Community   │              │
+│  │ + AI native │  │ + AI native │  │ + Content   │              │
+│  │             │  │             │  │ + Testing   │              │
+│  └─────────────┘  └─────────────┘  └─────────────┘              │
+│        │                │                │                      │
+│        └────────────────┼────────────────┘                      │
+│                         │                                       │
+│                  ┌──────┴──────┐                                │
+│                  │  AI AGENTS  │                                │
+│                  │ Claude Code │                                │
+│                  │  Cursor     │                                │
+│                  │  v0/Vercel  │                                │
+│                  └─────────────┘                                │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Builder (2 per pod)
+
+AIAD-native full-stack engineers who:
+- Ship features daily using AI assistance
+- Own entire vertical from idea to production
+- Make technical decisions without committee
+- Build in public (daily updates, demos)
+
+### Amplifier (1 per pod)
+
+Community builder + QA + content creator who:
+- Manages Discord community
+- Creates daily content (videos, posts, updates)
+- First-line user testing and feedback collection
+- Coordinates with Builders on priorities based on user signal
+
+---
+
+## Total Headcount
+
+| Role | Count | Notes |
+|------|-------|-------|
+| Labs Lead | 1 | Could be CTO initially |
+| Experiment Pod (Vocal) | 3 | 2 Builders + 1 Amplifier |
+| Experiment Pod (Guitar) | 3 | 2 Builders + 1 Amplifier |
+| Platform Team | 3-4 | Lead + Builders + DevOps |
+| **Total Labs** | **10-11** | |
+
+---
+
+## Key Design Decisions
+
+<CardGroup cols={2}>
+  <Card title="Hybrid Spinout" icon="rocket">
+    Successful experiments graduate to their own product teams. Labs stays lean as an incubator.
+  </Card>
+  <Card title="Mostly External Hiring" icon="users">
+    AIAD fluency is rare in traditional orgs. Hire fresh talent with AI-native workflows.
+  </Card>
+  <Card title="Remote-First" icon="globe">
+    Access global AIAD talent pool. Discord becomes the office. Async by default.
+  </Card>
+  <Card title="CTO Direct" icon="shield">
+    CTO leads Labs for first 6-12 months to protect from legacy process creep.
+  </Card>
+</CardGroup>
+
+---
+
+## Budget
+
+### Annual Labs Budget: ~$1.8M
+
+| Category | Cost |
+|----------|------|
+| 4 Builders @ $180K | $720K |
+| 2 Amplifiers @ $100K | $200K |
+| 3 Platform @ $170K avg | $510K |
+| 1 DevOps @ $160K | $160K |
+| Infrastructure & Ops | $226K |
+
+**Compared to traditional approach:** A 20-person local team would cost $4-5M and ship 2-3 features per year. Labs delivers same/more output for ~40% of cost.
+
+---
+
+## Next Steps
+
+<Steps>
+  <Step title="Confirm Structure">
+    CTO confirms organizational design
+  </Step>
+  <Step title="Begin Hiring">
+    Start Platform Lead and first Builder searches
+  </Step>
+  <Step title="Set Up Infrastructure">
+    Create Labs Discord, establish separate infrastructure
+  </Step>
+  <Step title="Launch Experiments">
+    Begin Vocal Suite and Guitar Playground experiments
+  </Step>
+</Steps>

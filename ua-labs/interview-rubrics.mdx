@@ -1,0 +1,288 @@
+---
+title: 'Interview Rubrics'
+description: 'How we evaluate candidates at UA Labs'
+---
+
+# UA Labs Interview Rubrics
+
+## Philosophy
+
+Traditional interviews test for traditional skills. We're hiring for a different kind of work:
+
+- **AIAD fluency** over raw coding ability
+- **Shipping velocity** over architectural perfection
+- **Autonomy** over collaboration preferences
+- **Transparency** over polish
+
+Every interview stage has one question: **"Will this person ship fast in our environment?"**
+
+---
+
+## Builder Interview Process
+
+### Stage 1: Portfolio Review (Async, 30 min evaluation)
+
+**What they submit:**
+- Links to shipped products (live, not "in development")
+- Description of their AIAD workflow
+- One paragraph on why Labs appeals to them
+
+**Evaluation Criteria:**
+
+| Criteria | Strong Signal | Weak Signal | Disqualify |
+|----------|--------------|-------------|------------|
+| **Shipped Work** | Multiple live products, can demo them | One significant project, clearly their work | Only "worked on" at companies, nothing independent |
+| **Recency** | Shipped something in last 6 months | Shipped in last 12 months | Nothing shipped in 2+ years |
+| **Scope Ownership** | Built end-to-end alone or as clear lead | Owned significant portions | "Contributed to" / unclear ownership |
+| **AIAD Usage** | AI tools are primary workflow, specific examples | Uses AI tools regularly | "I've tried Copilot" / skeptical of AI tools |
+| **Why Labs** | Specific resonance with speed/autonomy/transparency | General interest in startups | Wants stability / process / clear requirements |
+
+**Pass threshold:** Strong signal on Shipped Work + AIAD Usage, no disqualifiers
+
+**Time to decision:** 24 hours max
+
+---
+
+### Stage 2: Live Coding Session (60 min, synchronous)
+
+**Format:** Build something real together using AI tools
+
+**Setup:**
+- Candidate shares screen
+- They use their normal dev environment (Claude Code, Cursor, etc.)
+- We give them a problem, they solve it live
+- We observe workflow, not just output
+
+<AccordionGroup>
+  <Accordion title="Sample Prompts">
+    1. "Build a simple API that takes a song description and returns AI-generated metadata (genre, mood, instruments). Deploy it somewhere we can hit."
+
+    2. "Create a React component that visualizes an audio waveform from a file upload. Make it look good enough to ship."
+
+    3. "Build a Discord bot that responds to music-related questions using an LLM. Get it running in a test server."
+  </Accordion>
+</AccordionGroup>
+
+**What We're Watching:**
+
+| Behavior | Strong Signal | Weak Signal | Red Flag |
+|----------|--------------|-------------|----------|
+| **AI Usage** | Prompts AI first, iterates on output, uses AI for debugging | Uses AI for some parts, codes others manually | Doesn't use AI, or uses it awkwardly |
+| **Speed** | Something working in 30 min, polished by 60 | Working at 45 min, rough but functional | Still debugging basic setup at 60 min |
+| **Problem Decomposition** | Breaks into small pieces, ships incrementally | Has a plan, executes sequentially | Tries to architect everything upfront |
+| **Debugging Approach** | Uses AI to diagnose, tries quick fixes, moves on | Systematic debugging, finds issues | Gets stuck, spirals on one problem |
+| **Shipping Instinct** | Deploys early with rough version, iterates | Deploys at end when "ready" | Doesn't deploy, wants to "finish first" |
+| **Stack Decisions** | Uses what's fastest (Vercel, Railway, whatever) | Uses familiar tools even if slower | Debates tooling choices extensively |
+
+**Scoring:**
+
+```
+5 - Exceptional: Shipped polished, working solution in <45 min using AI fluidly
+4 - Strong: Working solution by 60 min, good AI usage, would ship this
+3 - Acceptable: Mostly working, some struggles, but showed right instincts
+2 - Weak: Incomplete or significant struggles, unclear if they'd be fast
+1 - No hire: Didn't ship, poor AI usage, or major red flags
+```
+
+**Pass threshold:** 4+ required, 3 only with strong Stage 1
+
+---
+
+### Stage 3: Culture Conversation (30 min, synchronous)
+
+**Interviewer:** CTO or senior Labs member
+
+**Purpose:** Validate alignment on autonomy, transparency, speed
+
+<AccordionGroup>
+  <Accordion title="Question 1: Tell me about a time you shipped something you weren't proud of">
+    | Strong Signal | Weak Signal | Red Flag |
+    |--------------|-------------|----------|
+    | Clear example, shipped anyway, learned and iterated | Example exists but hedged with caveats | "I don't ship things I'm not proud of" |
+    | Takes ownership of decision to ship fast | Blames external pressure | Can't think of an example |
+  </Accordion>
+
+  <Accordion title="Question 2: How do you decide when something is ready to ship?">
+    | Strong Signal | Weak Signal | Red Flag |
+    |--------------|-------------|----------|
+    | "When core value works, I ship and iterate" | "When I've tested the main flows" | "When it's complete and polished" |
+    | Mentions user feedback as input | Mentions internal review | Mentions approval processes |
+    | Talks about reversibility | Talks about risk mitigation | Talks about reputation risk |
+  </Accordion>
+
+  <Accordion title="Question 3: Describe your ideal working relationship with a manager">
+    | Strong Signal | Weak Signal | Red Flag |
+    |--------------|-------------|----------|
+    | "Set direction, get out of my way" | "Regular check-ins for alignment" | "Clear requirements and feedback" |
+    | "Tell me outcomes, not tasks" | "Collaborative on approach" | "I want to know exactly what's expected" |
+    | Mentions autonomy explicitly | Neutral on structure | Prefers defined process |
+  </Accordion>
+
+  <Accordion title="Question 4: How do you feel about sharing work-in-progress publicly?">
+    | Strong Signal | Weak Signal | Red Flag |
+    |--------------|-------------|----------|
+    | Excited, has done it, sees the value | Open to it, hasn't done much | Uncomfortable, prefers polished only |
+    | Mentions learning from public feedback | Understands the concept | Concerned about reputation |
+    | Has examples of public building | Would try it | "I prefer to share when ready" |
+  </Accordion>
+
+  <Accordion title="Question 5: What's your reaction when a project gets killed?">
+    | Strong Signal | Weak Signal | Red Flag |
+    |--------------|-------------|----------|
+    | "Part of the game, move on fast" | "Disappointing but understandable" | "Frustrated, feels like waste" |
+    | Mentions learning, data, next experiment | Accepts it intellectually | Would want to fight for it |
+    | Has experienced this positively | Hasn't experienced it | Takes it personally |
+  </Accordion>
+
+  <Accordion title="Question 6: How do you use AI tools in your daily work?">
+    | Strong Signal | Weak Signal | Red Flag |
+    |--------------|-------------|----------|
+    | Specific examples, AI is primary workflow | Uses regularly for specific tasks | "I use it sometimes" / vague |
+    | Multiple tools (Claude Code, Cursor, ChatGPT) | One or two tools | Hasn't integrated into workflow |
+    | Describes prompting strategies | Uses default suggestions | Skeptical of AI quality |
+  </Accordion>
+</AccordionGroup>
+
+**Culture Fit Scoring:**
+
+```
+5 - Perfect fit: Autonomy-seeking, speed-oriented, transparency-native
+4 - Strong fit: Aligned on most dimensions, minor adjustments needed
+3 - Possible fit: Some alignment, some concerns to discuss
+2 - Weak fit: Significant misalignment on key values
+1 - No fit: Would struggle in Labs environment
+```
+
+**Pass threshold:** 4+ required
+
+---
+
+## Amplifier Interview Process
+
+### Stage 1: Presence Review (Async, 30 min evaluation)
+
+| Criteria | Strong Signal | Weak Signal | Disqualify |
+|----------|--------------|-------------|------------|
+| **Community Experience** | Built community from zero, or grew significantly | Managed existing community | No community experience |
+| **Content Quality** | Engaging, authentic, consistent posting | Good content, inconsistent | Polished but inauthentic |
+| **Platform Fluency** | Native to Discord, Twitter, TikTok | Comfortable on 1-2 platforms | Only uses LinkedIn |
+| **Engagement Style** | Warm, responsive, creates conversations | Professional, informative | Broadcast only, no engagement |
+| **Authenticity** | Real personality, comfortable with imperfection | Somewhat polished but genuine | Corporate voice, overly curated |
+
+---
+
+### Stage 2: Community Scenario (45 min, synchronous)
+
+<AccordionGroup>
+  <Accordion title="Scenario 1: Day 1 Launch">
+    "We just launched our Discord server for Guitar Playground. We have 50 members who signed up from our waitlist. It's day 1. What do you do in the first week?"
+
+    | Strong Signal | Weak Signal | Red Flag |
+    |--------------|-------------|----------|
+    | Specific tactics (welcome flow, first post, engagement hooks) | General ideas about community building | "Wait for people to post" |
+    | Creates reasons for interaction | Focuses on rules/structure | Focuses on moderation |
+    | Personal engagement (DMs founders, highlights members) | Template approaches | Hands-off approach |
+  </Accordion>
+
+  <Accordion title="Scenario 2: Negative Feedback">
+    "A beta user posts: 'This app is honestly disappointing. The latency makes it unusable.' Three others react with thumbs up. How do you handle this?"
+
+    | Strong Signal | Weak Signal | Red Flag |
+    |--------------|-------------|----------|
+    | Acknowledge publicly, thank for feedback, loop in Builder | Respond professionally, apologize | Delete or hide the post |
+    | Turn into opportunity (ask for details, show you care) | Promise to look into it | Get defensive |
+    | Update publicly when fixed | Follow up privately | Ignore and move on |
+  </Accordion>
+
+  <Accordion title="Scenario 3: Content Cadence">
+    "You need to post daily updates. Today, the Builders are heads-down fixing a gnarly bug. What do you post?"
+
+    | Strong Signal | Weak Signal | Red Flag |
+    |--------------|-------------|----------|
+    | Shows the struggle authentically | Posts something generic | Skips the day |
+    | "Day 12: Bug hunting. Here's what we learned..." | "Working hard on improvements!" | "Nothing to share today" |
+    | Turns constraints into content | Finds adjacent content | Waits for Builders to provide content |
+  </Accordion>
+
+  <Accordion title="Scenario 4: Experiment Killed">
+    "We just killed an experiment after 8 weeks. How do you communicate this to the 500 people in our community?"
+
+    | Strong Signal | Weak Signal | Red Flag |
+    |--------------|-------------|----------|
+    | Transparent post about what we learned | Professional announcement | Try to spin it positively |
+    | Frames as Labs process working | Apologetic tone | Blame external factors |
+    | Redirects energy to next experiment | Thanks community, goes quiet | Defensive about the decision |
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Platform Lead Interview Process
+
+### Stage 2: Architecture Session (60 min)
+
+**Prompt:** "Walk me through how you'd build the Zoo platform to support multiple experiment pods shipping daily. They need: LLM integrations, auth, basic billing, deployment pipelines. You have 4 weeks to first experiment launch."
+
+| Topic | Strong Signal | Weak Signal | Red Flag |
+|-------|--------------|-------------|----------|
+| **Scope** | Ruthlessly minimal for week 1, expand later | Reasonable prioritization | Tries to design complete system |
+| **Build vs Buy** | Heavy buy/rent bias (Clerk, Stripe, Railway) | Some buy, some build | Wants to build core infra |
+| **LLM Integration** | Direct API calls first, abstract later | Portkey from start | Custom LLM gateway from start |
+| **Auth** | Clerk or similar, done in a day | Build simple auth | JWT + custom implementation |
+| **Deployment** | Railway/Vercel, no custom infra | Managed Kubernetes | Custom deployment pipeline |
+| **Pod Support Model** | Self-service, minimal process | Light-touch support | Approval/review processes |
+
+---
+
+## Scoring Summary
+
+### Overall Hire Decision
+
+| Role | Stage 1 | Stage 2 | Stage 3 | Hire Threshold |
+|------|---------|---------|---------|----------------|
+| Builder | Pass/Fail | 1-5 score | 1-5 score | Pass + 4+ + 4+ |
+| Amplifier | Pass/Fail | 1-5 score | 1-5 score | Pass + 4+ + 4+ |
+| Platform Lead | Pass/Fail | 1-5 score | 1-5 score | Pass + 4+ + 4+ |
+
+### Calibration Notes
+
+<Info>
+**Score of 5:** Exceptional. Would hire immediately. Rare.
+
+**Score of 4:** Strong. Clear hire. This is the bar.
+
+**Score of 3:** Acceptable but concerns. Only hire if Stage 1 was exceptional AND specific concerns can be addressed.
+
+**Score of 2:** Weak. Do not hire.
+
+**Score of 1:** Clear no. Major misalignment or red flags.
+</Info>
+
+---
+
+## Interview Principles
+
+1. **Speed in interviewing signals speed in culture.** Complete process in <1 week.
+
+2. **Watch behavior, not claims.** Live coding shows actual workflow. Scenarios show actual instincts.
+
+3. **Disqualifiers matter more than qualifiers.** One red flag outweighs multiple strong signals.
+
+4. **Culture fit isn't "nice to have."** Someone who ships fast but can't work transparently will fail.
+
+5. **Trust your gut on energy.** Labs needs people who are excited by the model, not just accepting of it.
+
+6. **Over-hire on AIAD fluency.** This is the differentiating skill. Technical gaps can be closed; workflow habits are hard to change.
+
+---
+
+## Post-Interview
+
+- **Decision within 24 hours** of final stage
+- **Offer extended within 48 hours** of decision
+- **Debrief documented** in hiring channel for pattern recognition
+- **Rejection feedback** offered to all candidates who completed Stage 2+
+
+<Warning>
+Hiring is the most important thing we do. Get it right, everything else follows. Get it wrong, nothing else matters.
+</Warning>
