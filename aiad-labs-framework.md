@@ -1,12 +1,12 @@
 # The AIAD Labs Framework
 
-## Organizational Design for AI-Augmented Innovation Teams
+## Organizational Design for AI-Augmented Product Development
 
 ---
 
 ## The Core Problem
 
-Traditional R&D operates on assumptions that no longer hold:
+Traditional product development operates on assumptions that no longer hold:
 
 1. **Building is expensive** → so we review before building
 2. **Changing is costly** → so we plan extensively upfront
@@ -44,8 +44,8 @@ This requires a fundamentally different organizational model.
 - Reports through VP Engineering
 
 ### Labs Division
-- AIAD-native innovation engine
-- Ships experiments in 8-week cycles
+- AIAD-native product development engine
+- Ships products in 8-week cycles
 - Zero legacy process
 - Reports directly to CTO (protection from process creep)
 
@@ -55,13 +55,13 @@ This requires a fundamentally different organizational model.
 
 ## The AIAD Pod Model
 
-### The 3-Person Experiment Pod
+### The 3-Person Product Pod
 
-Each experiment gets a single pod:
+Each product gets a single pod:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      EXPERIMENT POD                             │
+│                       PRODUCT POD                               │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
@@ -157,7 +157,7 @@ They're enablers, not gatekeepers.
 |-----------|-----------------|------|
 | Team Size | 10-30 per team | 2-3 per pod |
 | Shipping Cadence | Quarterly releases | Weekly/daily |
-| Planning | Roadmaps, PRDs, reviews | 8-week experiments, fill or kill |
+| Planning | Roadmaps, PRDs, reviews | 8-week cycles, fill or kill |
 | Code Reviews | Multi-stage approval | AI-assisted, trust-based |
 | Testing | Full QA cycles | Automated + user feedback |
 | Tools | Established stack | Whatever ships fastest |
@@ -236,16 +236,16 @@ Labs reports directly to CTO, not through VP Engineering chain. This prevents:
 
 ---
 
-## The Experiment Lifecycle
+## The Product Lifecycle
 
 ### 8-Week Fill or Kill
 
-Every experiment gets 8 weeks. Launch or kill, no exceptions.
+Every product gets 8 weeks to prove itself. Launch or kill, no exceptions.
 
 **Week 1-4: Idea to Private Beta**
 - Week 1: Concept to clickable prototype
-- Week 2-3: Core feature only (one AI-powered capability)
-- Week 4: Private beta to 1,000 users, gather data
+- Week 2-3: Core feature only (one key capability)
+- Week 4: Private beta to early users, gather data
 
 **Week 5-8: Private Beta to Public Launch**
 - Week 5-6: Fix critical issues, add #1 requested feature
@@ -260,25 +260,25 @@ Every experiment gets 8 weeks. Launch or kill, no exceptions.
 ### Fill Criteria
 
 All must be true to "fill" (continue):
-- Week 8 metrics hit (25%+ D7 retention, 40%+ activation)
-- Clear path to revenue
-- User demand exceeds experiment capacity
+- Week 8 metrics hit (retention, activation thresholds)
+- Clear path to revenue or strategic value
+- User demand exceeds capacity
 - Product-market fit signals strong
 
 ### The Spinout Model
 
-When an experiment succeeds, it graduates:
+When a product succeeds, it graduates:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                          EXPERIMENT LIFECYCLE                           │
+│                          PRODUCT LIFECYCLE                              │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
 │  LABS PHASE              SPINOUT PHASE              MATURE PHASE        │
 │  (8 weeks)               (variable)                 (ongoing)           │
 │                                                                         │
 │  ┌──────────┐           ┌──────────────┐           ┌──────────────┐    │
-│  │Experiment│  "Fill"   │   Product    │  Scale    │  Standalone  │    │
+│  │ Product  │  "Fill"   │   Product    │  Scale    │  Standalone  │    │
 │  │   Pod    │ ────────► │    Team      │ ────────► │   Business   │    │
 │  │  (3 ppl) │           │  (5-8 ppl)   │           │    Unit      │    │
 │  └──────────┘           └──────────────┘           └──────────────┘    │
@@ -296,7 +296,7 @@ When an experiment succeeds, it graduates:
 - Successful products get dedicated resources without bloating Labs
 - Spinout teams maintain AIAD culture from Labs DNA
 - Legacy never absorbs Labs products (prevents culture dilution)
-- Each spinout becomes a potential mini-business unit
+- Each spinout becomes a potential standalone business unit
 
 ---
 
@@ -533,7 +533,7 @@ All work happens in public channels. Decisions documented in real-time. Communit
 **Mitigation:**
 - CTO direct oversight protects independence
 - Hiring bar stays high (AIAD fluency required)
-- Successful products spin out (Labs stays small)
+- Successful products spin out (Labs stays lean)
 - Remote separation from Legacy
 
 ### Risk: Remote team lacks cohesion
@@ -551,7 +551,7 @@ All work happens in public channels. Decisions documented in real-time. Communit
 - Build in public attracts talent who see the work
 - Remote-first expands talent pool globally
 
-### Risk: Experiments fail publicly
+### Risk: Products fail publicly
 
 **Mitigation:**
 - This is a feature, not a bug
@@ -570,20 +570,20 @@ All work happens in public channels. Decisions documented in real-time. Communit
 - [ ] Set up Labs infrastructure (separate from Legacy)
 - [ ] Create Labs Discord server
 - [ ] Hire Platform Lead
-- [ ] Hire first 2 Builders (1 per experiment)
+- [ ] Hire first 2 Builders (1 per product)
 
-### Phase 2: First Experiments (Weeks 5-12)
+### Phase 2: First Products (Weeks 5-12)
 
 - [ ] Platform Lead sets up shared infrastructure
 - [ ] Complete pod hiring (second Builder + Amplifier per pod)
-- [ ] Launch first 2 experiments
-- [ ] Both experiments hit Week 8 milestones
+- [ ] Launch first 2 products
+- [ ] Both products hit Week 8 milestones
 - [ ] Fill/Kill decisions made
 
 ### Phase 3: Scale (Weeks 13+)
 
-- [ ] Spinout process for successful experiments
-- [ ] Add experiment pods as needed
+- [ ] Spinout process for successful products
+- [ ] Add product pods as needed
 - [ ] Promote Labs Lead from within (when CTO bandwidth constrained)
 - [ ] Establish Interface Committee rhythm
 
@@ -597,6 +597,6 @@ The AIAD Labs Framework is built on three core insights:
 
 2. **Small teams with AI leverage outperform large teams without it.** A 3-person pod shipping daily beats a 20-person team shipping quarterly.
 
-3. **Innovation requires protection from the mothership.** You cannot run AIAD inside a traditional org. Labs must be black-boxed, with clean interfaces to Legacy.
+3. **AIAD requires protection from the mothership.** You cannot run AIAD inside a traditional org. Labs must be black-boxed, with clean interfaces to Legacy.
 
-The result: an organizational structure optimized for the new economics of software development, where the unit of work is the conversation turn and the review is the creation itself.
+The result: an organizational structure optimized for the new economics of product development, where the unit of work is the conversation turn and the review is the creation itself.
